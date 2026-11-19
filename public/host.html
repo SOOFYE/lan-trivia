@@ -1,0 +1,731 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>LAN Trivia · Host</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background: #101523;
+        color: #f4f6fc;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 28px;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 26px;
+      }
+      .brand {
+        font-size: 22px;
+        font-weight: 850;
+        letter-spacing: 3px;
+      }
+      .muted {
+        color: #b7c4dc;
+      }
+      main {
+        display: grid;
+        grid-template-columns: minmax(0, 1.25fr) minmax(350px, 1fr);
+        gap: 26px;
+        max-width: 1800px;
+        margin: auto;
+      }
+      .panel {
+        border: 1px solid #35415a;
+        background: #192135;
+        border-radius: 24px;
+        padding: 28px;
+      }
+      .join {
+        display: flex;
+        align-items: center;
+        gap: 28px;
+      }
+      .qr {
+        background: white;
+        padding: 10px;
+        border-radius: 12px;
+        width: 230px;
+        flex-shrink: 0;
+      }
+      .qr svg {
+        display: block;
+        width: 100%;
+        height: auto;
+        shape-rendering: crispEdges;
+      }
+      .eyebrow {
+        color: #b6f568;
+        letter-spacing: 2px;
+        font-size: 14px;
+        text-transform: uppercase;
+      }
+      .url {
+        display: block;
+        font-size: clamp(20px, 2.2vw, 32px);
+        font-weight: 750;
+        color: white;
+        word-break: break-word;
+        margin: 12px 0;
+      }
+      .count {
+        font-size: 28px;
+        font-weight: 750;
+      }
+      .question {
+        margin-top: 28px;
+        border-top: 1px solid #39465e;
+        padding-top: 22px;
+      }
+      .line {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+      }
+      .timer {
+        font-size: 72px;
+        font-weight: 850;
+        color: #b6f568;
+        font-variant-numeric: tabular-nums;
+      }
+      h1 {
+        font-size: clamp(28px, 3vw, 46px);
+        line-height: 1.2;
+        margin: 12px 0 24px;
+      }
+      h2 {
+        font-size: 28px;
+        margin: 0;
+      }
+      .options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .option {
+        border: 1px solid #46536d;
+        background: #202b42;
+        border-radius: 12px;
+        padding: 18px;
+        font-size: 20px;
+      }
+      .correct {
+        border-color: #b6f568;
+        background: #294332;
+      }
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 26px;
+      }
+      button,
+      input {
+        font: inherit;
+        font-size: 16px;
+        border-radius: 12px;
+        padding: 15px;
+        min-height: 52px;
+      }
+      button {
+        font-weight: 750;
+        cursor: pointer;
+        background: #b6f568;
+        color: #172315;
+        border: 0;
+      }
+      button.secondary {
+        background: transparent;
+        color: #ffb2c1;
+        border: 1px solid #8a5868;
+      }
+      button:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
+      button:focus-visible,
+      input:focus-visible {
+        outline: 3px solid #b6f568;
+        outline-offset: 3px;
+      }
+      input {
+        background: #101523;
+        color: white;
+        border: 1px solid #5b6884;
+        max-width: 100%;
+      }
+      .auth {
+        margin-bottom: 22px;
+      }
+      .auth form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 12px;
+      }
+      #notice {
+        min-height: 24px;
+        color: #c5d2e9;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-top: 20px;
+      }
+      th {
+        text-align: left;
+        font-size: 14px;
+        color: #b8c4dc;
+        font-weight: 500;
+        padding: 12px 8px;
+      }
+      td {
+        padding: 18px 8px;
+        border-top: 1px solid #35415a;
+        font-size: 21px;
+      }
+      td:nth-child(2) {
+        overflow-wrap: anywhere;
+      }
+      td:last-child,
+      th:last-child {
+        text-align: right;
+      }
+      .rank {
+        color: #b6f568;
+        width: 44px;
+      }
+      .lock {
+        font-size: 14px;
+        color: #b6f568;
+      }
+      .offline {
+        color: #9aa7c1;
+        font-size: 14px;
+      }
+      .empty {
+        padding: 48px 0;
+        color: #bcc9e1;
+        line-height: 1.7;
+      }
+      .foot {
+        font-size: 14px;
+        color: #a8b8d4;
+        margin-top: 20px;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      @media (min-width: 1500px) {
+        .qr {
+          width: 280px;
+        }
+        td {
+          font-size: 26px;
+        }
+        .option {
+          font-size: 24px;
+        }
+      }
+      @media (max-width: 1000px) {
+        body {
+          padding: 16px;
+        }
+        main {
+          grid-template-columns: 1fr;
+        }
+        .panel {
+          padding: 22px;
+        }
+        .join {
+          flex-wrap: wrap;
+        }
+        .qr {
+          width: 210px;
+        }
+        .options {
+          grid-template-columns: 1fr;
+        }
+        .timer {
+          font-size: 60px;
+        }
+      }
+      @media print {
+        .controls,
+        .auth {
+          display: none;
+        }
+      }
+      .utility {
+        background: #28364d;
+        color: #e1eafa;
+        text-decoration: none;
+        padding: 15px;
+        border: 1px solid #526079;
+        border-radius: 12px;
+        display: inline-block;
+        font-weight: 700;
+        font-size: 16px;
+        min-height: 52px;
+      }
+      .utility:focus-visible {
+        outline: 3px solid #b6f568;
+        outline-offset: 3px;
+      }
+      #gameTitle {
+        display: block;
+        font-size: 16px;
+        color: #b6f568;
+        margin-top: 8px;
+        letter-spacing: 0;
+      }
+      #saveStatus {
+        font-size: 14px;
+        color: #b6f568;
+      }
+      #storageError {
+        color: #ffbdc8;
+      }
+      #pausedNote {
+        background: #493c1b;
+        border: 1px solid #a18a43;
+        color: #ffe4a1;
+        padding: 14px;
+        border-radius: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <span class="brand">LAN / TRIVIA<span id="gameTitle"></span></span
+      ><span id="connection" class="muted" role="status">Connecting…</span>
+    </header>
+    <main>
+      <section class="panel">
+        <div class="join">
+          <div
+            id="qr"
+            class="qr"
+            role="img"
+            aria-label="Scan to join the trivia game"
+          ></div>
+          <div>
+            <div class="eyebrow">Scan. Join. Play.</div>
+            <a id="joinURL" class="url"></a>
+            <div id="count" class="count">0 teams online</div>
+            <p class="muted">Use the same Wi-Fi as the host.</p>
+          </div>
+        </div>
+        <div class="question">
+          <div class="line">
+            <span id="progress" class="eyebrow">Lobby open</span
+            ><span id="timer" class="timer">—</span>
+          </div>
+          <h1 id="question">The room is yours.</h1>
+          <div id="options" class="options"></div>
+          <p id="roundStatus" class="muted">
+            Invite your teams, then start the first question.
+          </p>
+        </div>
+        <div id="auth" class="auth">
+          <label for="key">Host key (printed in the server terminal)</label>
+          <form id="authForm">
+            <input
+              id="key"
+              type="password"
+              autocomplete="off"
+              required
+              aria-label="Host key"
+            /><button>Unlock controls</button>
+          </form>
+        </div>
+        <p id="pausedNote" hidden>
+          Question paused. Locked answers and remaining time are saved. Resume
+          when the room is ready.
+        </p>
+        <div class="controls">
+          <button id="next" disabled>Start Game</button
+          ><button id="pause" disabled>Pause Question</button
+          ><button id="reset" class="secondary" disabled>
+            Reset Game / Kick All Players
+          </button>
+        </div>
+        <div class="controls" id="hostTools" hidden>
+          <a
+            id="setupLink"
+            class="utility"
+            href="/setup.html"
+            target="_blank"
+            rel="noopener"
+            >Game Setup</a
+          ><button id="exportResults" class="utility">Export Scores CSV</button>
+        </div>
+        <p id="notice" role="status"></p>
+        <p id="storageError" role="alert"></p>
+        <p id="saveStatus"></p>
+        <div class="foot">
+          100 points for a correct answer + up to 50 for speed. Progress saves
+          on this laptop. Returning players retain their scores.
+        </div>
+      </section>
+      <section class="panel">
+        <div class="line">
+          <h2>Leaderboard</h2>
+          <span class="eyebrow">Live standings</span>
+        </div>
+        <p class="muted">The room’s sharpest minds, ranked.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Team / player</th>
+              <th>Answer</th>
+              <th>Points</th>
+            </tr>
+          </thead>
+          <tbody id="leaders"></tbody>
+        </table>
+        <div id="empty" class="empty">
+          The stage is set.<br />Teams will appear here as they join.
+        </div>
+        <div class="foot">
+          ✓ Locked · — Thinking · Offline teams retain their scores.<br />Tied
+          scores share a rank.
+        </div>
+      </section>
+    </main>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      "use strict";
+      // Embedded QR encoder: Model 2, version 3, level L, byte mode, fixed mask 0.
+      // One RS block: 55 data + 15 error-correction codewords; 53 UTF-8 bytes max.
+      // LAN IPv4 URLs fit comfortably. Includes a four-module quiet zone.
+      function qrSVG(text) {
+        const bytes = new TextEncoder().encode(text);
+        if (bytes.length > 53)
+          throw new Error("Join URL too long for embedded QR encoder.");
+        const bits = [],
+          push = (v, n) => {
+            for (let i = n - 1; i >= 0; i--) bits.push((v >>> i) & 1);
+          };
+        push(4, 4);
+        push(bytes.length, 8);
+        for (const b of bytes) push(b, 8);
+        push(0, Math.min(4, 440 - bits.length));
+        while (bits.length % 8) bits.push(0);
+        const data = [];
+        for (let i = 0; i < bits.length; i += 8)
+          data.push(bits.slice(i, i + 8).reduce((v, b) => (v << 1) | b, 0));
+        for (let i = 0; data.length < 55; i++) data.push(i % 2 ? 0x11 : 0xec);
+        const mul = (x, y) => {
+          let z = 0;
+          for (let i = 7; i >= 0; i--) {
+            z = (z << 1) ^ ((z >>> 7) * 0x11d);
+            z ^= ((y >>> i) & 1) * x;
+          }
+          return z;
+        };
+        const divisor = Array(15).fill(0);
+        divisor[14] = 1;
+        let root = 1;
+        for (let i = 0; i < 15; i++) {
+          for (let j = 0; j < 15; j++) {
+            divisor[j] = mul(divisor[j], root);
+            if (j + 1 < 15) divisor[j] ^= divisor[j + 1];
+          }
+          root = mul(root, 2);
+        }
+        const ecc = Array(15).fill(0);
+        for (const b of data) {
+          const factor = b ^ ecc.shift();
+          ecc.push(0);
+          for (let j = 0; j < 15; j++) ecc[j] ^= mul(divisor[j], factor);
+        }
+        const payload = [];
+        for (const b of [...data, ...ecc])
+          for (let i = 7; i >= 0; i--) payload.push((b >>> i) & 1);
+        const size = 29,
+          m = Array.from({ length: size }, () => Array(size).fill(false)),
+          reserved = m.map((row) => row.slice());
+        const set = (x, y, dark) => {
+          m[y][x] = !!dark;
+          reserved[y][x] = true;
+        };
+        for (let i = 0; i < size; i++) {
+          set(6, i, i % 2 === 0);
+          set(i, 6, i % 2 === 0);
+        }
+        for (const [cx, cy] of [
+          [3, 3],
+          [25, 3],
+          [3, 25],
+        ])
+          for (let dy = -4; dy <= 4; dy++)
+            for (let dx = -4; dx <= 4; dx++) {
+              const x = cx + dx,
+                y = cy + dy,
+                distance = Math.max(Math.abs(dx), Math.abs(dy));
+              if (x >= 0 && x < size && y >= 0 && y < size)
+                set(x, y, distance !== 2 && distance !== 4);
+            }
+        for (let dy = -2; dy <= 2; dy++)
+          for (let dx = -2; dx <= 2; dx++)
+            set(22 + dx, 22 + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1);
+        const formatData = 8; // level L (01), mask 0 (000)
+        let rem = formatData;
+        for (let i = 0; i < 10; i++) rem = (rem << 1) ^ ((rem >>> 9) * 0x537);
+        const format = ((formatData << 10) | rem) ^ 0x5412,
+          bit = (i) => ((format >>> i) & 1) !== 0;
+        for (let i = 0; i <= 5; i++) set(8, i, bit(i));
+        set(8, 7, bit(6));
+        set(8, 8, bit(7));
+        set(7, 8, bit(8));
+        for (let i = 9; i < 15; i++) set(14 - i, 8, bit(i));
+        for (let i = 0; i < 8; i++) set(size - 1 - i, 8, bit(i));
+        for (let i = 8; i < 15; i++) set(8, size - 15 + i, bit(i));
+        set(8, size - 8, true);
+        let k = 0;
+        for (let right = size - 1; right >= 1; right -= 2) {
+          if (right === 6) right = 5;
+          for (let vertical = 0; vertical < size; vertical++)
+            for (let j = 0; j < 2; j++) {
+              const x = right - j,
+                y = ((right + 1) & 2) === 0 ? size - 1 - vertical : vertical;
+              if (!reserved[y][x])
+                m[y][x] = !!(payload[k++] || 0) !== ((x + y) % 2 === 0);
+            }
+        }
+        let d = "";
+        for (let y = 0; y < size; y++)
+          for (let x = 0; x < size; x++)
+            if (m[y][x]) d += `M${x + 4},${y + 4}h1v1h-1z`;
+        return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 37 37"><rect width="37" height="37" fill="white"/><path d="${d}" fill="black"/></svg>`;
+      }
+      const $ = (id) => document.getElementById(id),
+        socket = io();
+      let state,
+        authorized = false,
+        hostKey = location.hash.slice(1),
+        renderedURL = "";
+      if (hostKey) {
+        try {
+          localStorage.setItem("triviaHostKey", hostKey);
+        } catch {}
+        history.replaceState(null, "", location.pathname);
+      } else {
+        try {
+          hostKey =
+            localStorage.getItem("triviaHostKey") ||
+            sessionStorage.getItem("triviaHostKey") ||
+            "";
+        } catch {}
+      }
+      function authenticate(key) {
+        socket.timeout(5000).emit("host:auth", key, (err, response) => {
+          authorized = !err && response.ok;
+          if (authorized) {
+            hostKey = key;
+            try {
+              localStorage.setItem("triviaHostKey", key);
+            } catch {}
+            $("key").value = "";
+          }
+          $("notice").textContent = authorized
+            ? "Host controls unlocked."
+            : "Unable to unlock. Use the key from the current server terminal.";
+          render();
+        });
+      }
+      socket.on("connect", () => {
+        $("connection").textContent = "LAN connected · projector";
+        if (hostKey) authenticate(hostKey);
+        socket.emit("sync");
+        render();
+      });
+      socket.on("disconnect", () => {
+        authorized = false;
+        $("connection").textContent = "Disconnected · reconnecting…";
+        render();
+      });
+      socket.on("connect_error", () => {
+        $("connection").textContent = "Server unavailable · reconnecting…";
+      });
+      socket.on("state", (next) => {
+        state = next;
+        render();
+      });
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) socket.emit("sync");
+      });
+      $("authForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        authenticate($("key").value.trim());
+      });
+      function command(event) {
+        if (!authorized || !socket.connected) return;
+        $("next").disabled = true;
+        $("pause").disabled = true;
+        $("reset").disabled = true;
+        socket.timeout(5000).emit(event, null, (err, response) => {
+          $("notice").textContent = err
+            ? "Connection interrupted. Checking the saved game…"
+            : response.error || "Saved.";
+          socket.emit("sync");
+          render();
+        });
+      }
+      $("next").addEventListener("click", () => command("host:next"));
+      $("pause").addEventListener("click", () => command("host:pause"));
+      $("reset").addEventListener("click", () => {
+        if (
+          confirm(
+            "Start a new game? This clears all scores, answer history, and player recovery codes. Export scores first if needed. The title and questions are kept.",
+          )
+        )
+          command("host:reset");
+      });
+      $("exportResults").addEventListener("click", () => {
+        if (!state || !authorized) return;
+        const cell = (value) => {
+          let text = String(value);
+          if (/^[=+@\-\t\r\n]/.test(text)) text = "'" + text;
+          return '"' + text.replace(/"/g, '""') + '"';
+        };
+        const rows = [
+          ["Rank", "Player / team", "Score", "Online"],
+          ...state.leaderboard.map((p) => [
+            1 + state.leaderboard.filter((o) => o.score > p.score).length,
+            p.name,
+            p.score,
+            p.online ? "Yes" : "No",
+          ]),
+        ];
+        const blob = new Blob(
+          ["\uFEFF" + rows.map((row) => row.map(cell).join(",")).join("\r\n")],
+          { type: "text/csv;charset=utf-8" },
+        );
+        const url = URL.createObjectURL(blob),
+          a = document.createElement("a");
+        a.href = url;
+        a.download = "trivia-scores.csv";
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      });
+      function render() {
+        $("auth").hidden = authorized;
+        $("hostTools").hidden = !authorized;
+        $("setupLink").href = `/setup.html#${encodeURIComponent(hostKey)}`;
+        if (!state) return;
+        if (renderedURL !== state.joinURL) {
+          renderedURL = state.joinURL;
+          $("joinURL").textContent = renderedURL;
+          $("joinURL").href = renderedURL;
+          $("qr").innerHTML = qrSVG(renderedURL);
+        }
+        const online = state.leaderboard.filter((p) => p.online).length;
+        $("gameTitle").textContent = state.title;
+        $("pausedNote").hidden = state.phase !== "paused";
+        $("storageError").textContent = state.storageError;
+        $("saveStatus").textContent = state.storageError
+          ? ""
+          : "Autosave enabled · players, answers, and scores survive server restarts";
+        $("count").textContent =
+          `${online} team${online === 1 ? "" : "s"} online · ${state.leaderboard.length} joined`;
+        $("next").disabled =
+          !authorized ||
+          !socket.connected ||
+          ["question", "paused", "finished"].includes(state.phase);
+        $("pause").disabled =
+          !authorized ||
+          !socket.connected ||
+          !["question", "paused"].includes(state.phase);
+        $("pause").textContent =
+          state.phase === "paused" ? "Resume Question" : "Pause Question";
+        $("reset").disabled = !authorized || !socket.connected;
+        $("next").textContent =
+          state.phase === "lobby"
+            ? "Start Game"
+            : state.phase === "finished"
+              ? "Game Complete"
+              : state.index === state.total - 1
+                ? "Show Final Results"
+                : "Next Question";
+        $("progress").textContent =
+          state.phase === "lobby"
+            ? "Lobby open"
+            : state.phase === "finished"
+              ? "Final results"
+              : `Question ${state.index + 1} / ${state.total}`;
+        $("timer").textContent = ["question", "paused"].includes(state.phase)
+          ? state.remaining
+          : state.phase === "reveal"
+            ? "0"
+            : "—";
+        $("question").textContent =
+          state.phase === "lobby"
+            ? "The room is yours."
+            : state.phase === "finished"
+              ? "A round of applause."
+              : state.question.question;
+        $("roundStatus").textContent =
+          state.phase === "lobby"
+            ? `${state.total} questions ready. Use Game Setup to customize, then start.`
+            : ["question", "paused"].includes(state.phase)
+              ? `${state.leaderboard.filter((p) => p.answered).length} / ${state.leaderboard.length} teams locked in${state.phase === "paused" ? " · PAUSED" : ""}`
+              : state.phase === "reveal"
+                ? `Correct answer: ${"ABCD"[state.answer]}. ${state.question.options[state.answer]}`
+                : "Final scores are saved. Export scores or reset for a new game.";
+        $("options").replaceChildren();
+        if (["question", "paused", "reveal"].includes(state.phase))
+          state.question.options.forEach((option, i) => {
+            const div = document.createElement("div");
+            div.className = "option" + (state.answer === i ? " correct" : "");
+            div.textContent = `${"ABCD"[i]}. ${option}`;
+            $("options").append(div);
+          });
+        $("empty").hidden = state.leaderboard.length > 0;
+        $("leaders").replaceChildren();
+        let rank = 0;
+        state.leaderboard.forEach((p, i, list) => {
+          if (i === 0 || p.score !== list[i - 1].score) rank = i + 1;
+          const tr = document.createElement("tr");
+          const td = (text, className = "") => {
+            const cell = document.createElement("td");
+            cell.textContent = text;
+            cell.className = className;
+            tr.append(cell);
+            return cell;
+          };
+          td(rank, "rank");
+          const name = td(p.name);
+          if (!p.online) {
+            const span = document.createElement("div");
+            span.className = "offline";
+            span.textContent = "Offline";
+            name.append(span);
+          }
+          td(
+            state.index < 0 ? "—" : p.answered ? "✓ Locked" : "—",
+            p.answered ? "lock" : "muted",
+          );
+          td(p.score);
+          $("leaders").append(tr);
+        });
+      }
+    </script>
+  </body>
+</html>

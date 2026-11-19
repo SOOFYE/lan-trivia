@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#101523" />
+    <title>LAN Trivia · Play</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background: #101523;
+        color: #f4f6fc;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+      }
+      main {
+        max-width: 640px;
+        margin: auto;
+        padding: 26px 20px;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 44px;
+      }
+      .brand {
+        font-size: 18px;
+        font-weight: 850;
+        letter-spacing: 2px;
+      }
+      .badge {
+        font-size: 14px;
+        color: #a9b8d4;
+      }
+      h1 {
+        font-size: clamp(30px, 7vw, 44px);
+        line-height: 1.15;
+        margin: 18px 0;
+      }
+      p {
+        color: #b6c2da;
+        line-height: 1.6;
+      }
+      label {
+        display: block;
+        margin: 30px 0 10px;
+        font-weight: 650;
+      }
+      input,
+      button {
+        font: inherit;
+        font-size: 18px;
+        border-radius: 14px;
+        min-height: 60px;
+      }
+      input {
+        width: 100%;
+        background: #1b2336;
+        color: white;
+        border: 1px solid #46516b;
+        padding: 16px;
+      }
+      button {
+        cursor: pointer;
+        border: 1px solid #46516b;
+        background: #202a40;
+        color: white;
+        padding: 16px 20px;
+        font-weight: 700;
+      }
+      button:focus-visible,
+      input:focus-visible {
+        outline: 3px solid #b6f568;
+        outline-offset: 3px;
+      }
+      button:disabled {
+        cursor: default;
+        opacity: 0.55;
+      }
+      .primary {
+        width: 100%;
+        margin-top: 16px;
+        background: #b6f568;
+        color: #172315;
+        border: 0;
+      }
+      .eyebrow {
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 14px;
+        color: #b6f568;
+      }
+      .card {
+        padding: 24px;
+        background: #192135;
+        border: 1px solid #313d57;
+        border-radius: 20px;
+        margin-top: 24px;
+      }
+      .topline {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+      }
+      .timer {
+        font-size: 44px;
+        font-weight: 850;
+        font-variant-numeric: tabular-nums;
+      }
+      .track {
+        height: 6px;
+        background: #303a50;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 12px 0 26px;
+      }
+      .bar {
+        height: 100%;
+        background: #b6f568;
+        transition: width 0.3s;
+      }
+      .answers {
+        display: grid;
+        gap: 12px;
+        margin-top: 28px;
+      }
+      .option {
+        text-align: left;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .letter {
+        border: 1px solid #58627a;
+        border-radius: 8px;
+        padding: 6px 10px;
+        color: #c2cee7;
+      }
+      .option.selected {
+        border: 2px solid #b6f568;
+        opacity: 1;
+      }
+      .option.correct {
+        background: #24472d;
+        border: 2px solid #9ce9aa;
+        opacity: 1;
+      }
+      .option.wrong {
+        background: #4a2936;
+        border: 2px solid #ed9caf;
+        opacity: 1;
+      }
+      #message {
+        min-height: 28px;
+        color: #c8f79a;
+        margin-top: 18px;
+      }
+      #error {
+        color: #ffb2c1;
+      }
+      #status {
+        color: #bac6de;
+      }
+      .score {
+        font-size: 42px;
+        font-weight: 850;
+        color: #b6f568;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      small {
+        font-size: 14px;
+        color: #a9b8d4;
+      }
+      .resume {
+        margin-top: 28px;
+        border-top: 1px solid #35415a;
+        padding-top: 24px;
+      }
+      .resume h2 {
+        font-size: 22px;
+      }
+      .resume input {
+        letter-spacing: 2px;
+      }
+      .secondary {
+        width: 100%;
+        margin-top: 12px;
+      }
+      .gameTitle {
+        font-size: 16px;
+        color: #b6f568;
+        margin-bottom: 22px;
+      }
+      .stats {
+        display: flex;
+        gap: 24px;
+        margin: 20px 0;
+      }
+      .stat {
+        flex: 1;
+        padding: 16px;
+        border: 1px solid #35415a;
+        border-radius: 12px;
+      }
+      .stat strong {
+        display: block;
+        font-size: 26px;
+      }
+      .stat small {
+        display: block;
+        margin-top: 6px;
+      }
+      details {
+        margin: 24px 0;
+        border: 1px solid #35415a;
+        border-radius: 14px;
+        padding: 16px;
+      }
+      summary {
+        cursor: pointer;
+        font-weight: 650;
+        min-height: 28px;
+      }
+      .recovery {
+        font-size: 22px;
+        letter-spacing: 2px;
+        color: #b6f568;
+        font-weight: 750;
+        overflow-wrap: anywhere;
+      }
+      .historyItem {
+        padding: 16px 0;
+        border-top: 1px solid #35415a;
+      }
+      .historyItem p {
+        margin: 6px 0;
+        font-size: 16px;
+      }
+      .paused {
+        padding: 14px;
+        background: #493c1b;
+        border: 1px solid #a18a43;
+        border-radius: 12px;
+        margin: 18px 0;
+        color: #ffe4a1;
+      }
+      #savedNote {
+        font-size: 14px;
+        color: #adbed9;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <span class="brand">LAN / TRIVIA</span
+        ><span id="connection" class="badge" role="status">Connecting…</span>
+      </header>
+      <section id="joinScreen">
+        <div class="eyebrow">One room. One leaderboard.</div>
+        <h1>Big brains.<br />Friendly competition.</h1>
+        <p>
+          Join with your name or play together as a team. Keep this screen open
+          for the next question.
+        </p>
+        <p id="gameTitle" class="gameTitle"></p>
+        <form id="joinForm">
+          <label for="nickname">Nickname or team name</label
+          ><input
+            id="nickname"
+            maxlength="28"
+            required
+            autocomplete="nickname"
+            placeholder="Your team name"
+          /><button id="joinButton" class="primary">Join the game</button>
+        </form>
+        <div class="resume">
+          <h2>Already playing?</h2>
+          <p>
+            Use your private recovery code if you changed browsers or phones.
+          </p>
+          <form id="resumeForm">
+            <label for="recoveryInput">Recovery code</label
+            ><input
+              id="recoveryInput"
+              maxlength="16"
+              required
+              autocomplete="off"
+              autocapitalize="characters"
+              spellcheck="false"
+              placeholder="ABCD-EF12-3456"
+            /><button id="resumeButton" class="secondary">
+              Recover my progress
+            </button>
+          </form>
+        </div>
+        <p id="error" role="alert"></p>
+        <small>Connected locally. No internet needed.</small>
+      </section>
+      <section id="playScreen" hidden>
+        <div class="topline">
+          <span id="team" class="eyebrow"></span><span id="score"></span>
+        </div>
+        <div class="stats">
+          <div class="stat">
+            <strong id="place">—</strong><small>Current place</small>
+          </div>
+          <div class="stat">
+            <strong id="completed">0</strong><small>Rounds completed</small>
+          </div>
+        </div>
+        <p id="savedNote"></p>
+        <div id="paused" class="paused" role="status" hidden>
+          Game paused. Your answer and remaining time are safe. Wait for the
+          host to resume.
+        </div>
+        <div id="waiting" class="card">
+          <div class="eyebrow">You’re in</div>
+          <h1>Ready when you are.</h1>
+          <p>The host will start the next question. Watch the big screen.</p>
+        </div>
+        <div id="questionScreen" hidden>
+          <div class="topline">
+            <span id="progress" class="badge"></span
+            ><span id="timer" class="timer" aria-label="Seconds remaining"
+              >0</span
+            >
+          </div>
+          <div class="track"><div id="bar" class="bar"></div></div>
+          <h1 id="question"></h1>
+          <div id="answers" class="answers"></div>
+        </div>
+        <div id="finished" class="card" hidden>
+          <div class="eyebrow">That’s a wrap</div>
+          <h1>Thanks for playing.</h1>
+          <p id="finalResult"></p>
+        </div>
+        <p id="message" role="status" aria-live="polite"></p>
+        <details>
+          <summary>Your private recovery code</summary>
+          <p>
+            Save this code to recover your team on another browser or phone.
+            Anyone with the code can play as your team.
+          </p>
+          <div id="recoveryCode" class="recovery"></div>
+          <p>
+            This browser remembers you automatically. If you clear browser data
+            or the server address changes, enter this code on the join screen.
+          </p>
+        </details>
+        <details id="historyDetails">
+          <summary>Your answer history</summary>
+          <div id="history"></div>
+        </details>
+      </section>
+      <p id="status" role="status"></p>
+      <p id="storageError" role="alert"></p>
+    </main>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      "use strict";
+      const $ = (id) => document.getElementById(id),
+        socket = io();
+      let state = null,
+        pending = false,
+        pendingRound = -1,
+        shownRound = "",
+        shownHistory = "";
+      let token = null,
+        persistentBrowser = true;
+      try {
+        token =
+          localStorage.getItem("triviaToken") ||
+          sessionStorage.getItem("triviaToken");
+        if (token) localStorage.setItem("triviaToken", token);
+      } catch {
+        persistentBrowser = false;
+      }
+      function saveToken(value) {
+        token = value;
+        try {
+          if (value) localStorage.setItem("triviaToken", value);
+          else localStorage.removeItem("triviaToken");
+          sessionStorage.removeItem("triviaToken");
+        } catch {
+          persistentBrowser = false;
+        }
+      }
+      function join(data, button) {
+        if (!socket.connected) {
+          $("error").textContent = "Wait for a connection to the host.";
+          return;
+        }
+        if (button) button.disabled = true;
+        $("error").textContent = "";
+        socket.timeout(5000).emit("join", data, (err, response) => {
+          if (button) button.disabled = false;
+          if (err || response.error) {
+            if (data.token && !data.name) saveToken(null);
+            $("error").textContent = err
+              ? "Connection interrupted. Try again."
+              : response.error;
+          } else {
+            saveToken(response.token);
+            $("recoveryInput").value = "";
+          }
+        });
+      }
+      socket.on("connect", () => {
+        $("connection").textContent = "On the LAN";
+        $("status").textContent = "";
+        if (token) join({ token });
+        socket.emit("sync");
+      });
+      socket.on("disconnect", () => {
+        $("connection").textContent = "Reconnecting…";
+        $("status").textContent =
+          "Connection lost. Answers are paused until you reconnect.";
+        render();
+      });
+      socket.on("connect_error", () => {
+        $("connection").textContent = "Server unavailable";
+        $("status").textContent =
+          "Stay on the same Wi-Fi as the host. Reconnecting automatically…";
+      });
+      $("joinForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        join({ name: $("nickname").value, token }, $("joinButton"));
+      });
+      $("resumeForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        join({ recoveryCode: $("recoveryInput").value }, $("resumeButton"));
+      });
+      socket.on("kicked", () => {
+        saveToken(null);
+        pending = false;
+        $("error").textContent =
+          "The host reset the game. Enter your name to join again.";
+      });
+      socket.on("state", (next) => {
+        state = next;
+        if (next.roundId !== pendingRound || next.me?.choice !== null)
+          pending = false;
+        render();
+      });
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) socket.emit("sync");
+      });
+      function render() {
+        if (!state) return;
+        const me = state.me;
+        $("gameTitle").textContent = state.title;
+        $("storageError").textContent = state.storageError;
+        $("joinButton").disabled =
+          !socket.connected ||
+          state.phase === "finished" ||
+          (!state.allowLateJoin && state.phase !== "lobby");
+        $("joinScreen").hidden = !!me;
+        $("playScreen").hidden = !me;
+        if (!me) return;
+        $("team").textContent = me.name;
+        $("score").textContent = `${me.score} pts`;
+        $("place").textContent = `#${me.rank}`;
+        $("completed").textContent = me.history.length;
+        $("paused").hidden = state.phase !== "paused";
+        $("savedNote").textContent = persistentBrowser
+          ? "Progress saved on the host. This browser remembers your team."
+          : "Browser storage is unavailable. Save your recovery code below to return.";
+        $("recoveryCode").textContent = me.recoveryCode
+          .match(/.{1,4}/g)
+          .join("-");
+        const historyKey = `${state.gameId}:${me.id}:${me.history.length}`;
+        if (shownHistory !== historyKey) {
+          shownHistory = historyKey;
+          $("history").replaceChildren();
+          if (!me.history.length) {
+            const p = document.createElement("p");
+            p.textContent =
+              "Completed questions will appear here after the answer is revealed.";
+            $("history").append(p);
+          }
+          for (const item of me.history) {
+            const div = document.createElement("div");
+            div.className = "historyItem";
+            const title = document.createElement("strong");
+            title.textContent = `${item.index + 1}. ${item.question}`;
+            const choice = document.createElement("p");
+            choice.textContent = `Your answer: ${item.choice === null ? "No answer" : item.options[item.choice]}`;
+            const correct = document.createElement("p");
+            correct.textContent = `Correct: ${item.options[item.correctAnswer]} · +${item.earned} points`;
+            div.append(title, choice, correct);
+            $("history").append(div);
+          }
+        }
+        $("waiting").hidden = state.phase !== "lobby";
+        $("finished").hidden = state.phase !== "finished";
+        $("questionScreen").hidden = !["question", "paused", "reveal"].includes(
+          state.phase,
+        );
+        $("message").textContent = "";
+        if (state.phase === "finished") {
+          const rank = me.rank;
+          $("finalResult").textContent =
+            `You finished #${rank} with ${me.score} points. Check the projector for the full leaderboard.`;
+        }
+        if (
+          !state.question ||
+          !["question", "paused", "reveal"].includes(state.phase)
+        )
+          return;
+        $("progress").textContent =
+          `QUESTION ${state.index + 1} / ${state.total}`;
+        $("timer").textContent = state.remaining;
+        $("bar").style.width = `${(100 * state.remaining) / state.duration}%`;
+        $("question").textContent = state.question.question;
+        const roundKey = `${state.gameId}:${state.roundId}`;
+        if (shownRound !== roundKey) {
+          shownRound = roundKey;
+          $("answers").replaceChildren();
+          state.question.options.forEach((option, choice) => {
+            const button = document.createElement("button");
+            button.className = "option";
+            const letter = document.createElement("span");
+            letter.className = "letter";
+            letter.textContent = "ABCD"[choice];
+            const label = document.createElement("span");
+            label.textContent = option;
+            button.append(letter, label);
+            button.addEventListener("click", () => {
+              if (
+                pending ||
+                !socket.connected ||
+                state.phase !== "question" ||
+                state.remaining <= 0 ||
+                state.me.choice !== null
+              )
+                return;
+              pending = true;
+              pendingRound = state.roundId;
+              render();
+              socket
+                .timeout(5000)
+                .emit(
+                  "answer",
+                  { choice, roundId: state.roundId, gameId: state.gameId },
+                  (err, response) => {
+                    if (err || response.error) {
+                      pending = false;
+                      socket.emit("sync");
+                      $("status").textContent = err
+                        ? "Answer not confirmed. Syncing with the host…"
+                        : response.error;
+                      render();
+                    }
+                  },
+                );
+            });
+            $("answers").append(button);
+          });
+        }
+        [...$("answers").children].forEach((button, choice) => {
+          button.disabled =
+            !socket.connected ||
+            pending ||
+            me.choice !== null ||
+            state.phase !== "question" ||
+            state.remaining <= 0;
+          button.className =
+            "option" +
+            (choice === me.choice ? " selected" : "") +
+            (choice === state.answer ? " correct" : "") +
+            (state.phase === "reveal" &&
+            choice === me.choice &&
+            choice !== state.answer
+              ? " wrong"
+              : "");
+        });
+        if (state.phase === "reveal")
+          $("message").textContent =
+            `Correct answer: ${"ABCD"[state.answer]}. ${state.question.options[state.answer]}. ${me.earned ? `+${me.earned} points!` : me.choice === null ? "Time’s up — no answer submitted." : "No points this time."}`;
+        else
+          $("message").textContent =
+            state.phase === "paused"
+              ? me.choice !== null
+                ? "Paused · your answer is locked and saved."
+                : "Paused · answering resumes with the host."
+              : me.choice !== null
+                ? "Answer locked and saved. Watch the countdown!"
+                : pending
+                  ? "Locking your answer…"
+                  : "Tap one answer. Make it count.";
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "lan-trivia",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Entirely local multiplayer trivia for a LAN",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node tests/game.test.cjs",
+    "launch": "node scripts/launch.cjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "socket.io-client": "^4.8.4"
+  }
+}

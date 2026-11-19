@@ -1,0 +1,702 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>LAN Trivia · Game Setup</title>
+    <style>
+      :root {
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+        color-scheme: dark;
+        color: #f4f6fc;
+        background: #101523;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+      }
+      main {
+        max-width: 1000px;
+        margin: auto;
+        padding: 28px 22px 80px;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        align-items: center;
+        margin-bottom: 30px;
+      }
+      .brand {
+        font-size: 20px;
+        letter-spacing: 3px;
+        font-weight: 850;
+      }
+      a {
+        color: #b6f568;
+      }
+      h1 {
+        font-size: 40px;
+        margin: 16px 0;
+      }
+      h2 {
+        font-size: 26px;
+      }
+      h3 {
+        font-size: 20px;
+        margin: 0;
+      }
+      p {
+        color: #b9c7df;
+        line-height: 1.6;
+      }
+      .eyebrow {
+        color: #b6f568;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 14px;
+      }
+      .panel,
+      .questionCard {
+        background: #192135;
+        border: 1px solid #35415a;
+        border-radius: 18px;
+        padding: 24px;
+        margin: 22px 0;
+      }
+      .toolbar,
+      .row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .row {
+        justify-content: space-between;
+        margin-bottom: 18px;
+      }
+      label {
+        display: block;
+        font-size: 16px;
+        font-weight: 650;
+        margin: 16px 0 8px;
+      }
+      input:not([type="checkbox"]):not([type="radio"]),
+      textarea,
+      select {
+        font: inherit;
+        background: #101523;
+        border: 1px solid #5b6884;
+        border-radius: 10px;
+        color: white;
+        padding: 12px;
+        width: 100%;
+        min-height: 48px;
+      }
+      textarea {
+        min-height: 90px;
+        resize: vertical;
+      }
+      button,
+      .fileLabel {
+        font: inherit;
+        font-weight: 700;
+        border: 1px solid #53637e;
+        border-radius: 10px;
+        padding: 13px 18px;
+        min-height: 48px;
+        cursor: pointer;
+        background: #26344c;
+        color: white;
+        display: inline-block;
+        margin: 0;
+      }
+      button.primary {
+        background: #b6f568;
+        color: #172315;
+        border-color: #b6f568;
+      }
+      .danger {
+        color: #ffb8c7;
+      }
+      button:disabled,
+      input:disabled,
+      textarea:disabled,
+      select:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      button:focus-visible,
+      input:focus-visible,
+      textarea:focus-visible,
+      select:focus-visible,
+      a:focus-visible,
+      summary:focus-visible {
+        outline: 3px solid #b6f568;
+        outline-offset: 3px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px 20px;
+      }
+      .answerRow {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .answerRow input[type="radio"] {
+        width: 22px;
+        height: 22px;
+        flex-shrink: 0;
+        accent-color: #b6f568;
+      }
+      .check {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        font-weight: 500;
+      }
+      .check input {
+        width: 22px;
+        height: 22px;
+        accent-color: #b6f568;
+      }
+      .small {
+        font-size: 14px;
+        color: #aebfda;
+      }
+      .message {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: #101523;
+        padding: 14px 0;
+        min-height: 50px;
+        color: #c8f79a;
+      }
+      #lockNote {
+        color: #ffe4a1;
+      }
+      code {
+        color: #c8f79a;
+        font-size: 18px;
+        letter-spacing: 2px;
+      }
+      .person {
+        padding: 16px 0;
+        border-bottom: 1px solid #35415a;
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      details {
+        margin-top: 26px;
+      }
+      summary {
+        cursor: pointer;
+        font-weight: 700;
+        min-height: 32px;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      @media (max-width: 600px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        .panel,
+        .questionCard {
+          padding: 18px;
+        }
+        h1 {
+          font-size: 32px;
+        }
+        header {
+          align-items: flex-start;
+        }
+        .toolbar button {
+          flex: 1;
+        }
+        .person {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <span class="brand">LAN / TRIVIA</span
+        ><a href="/host.html">Back to dashboard</a>
+      </header>
+      <div class="eyebrow">Host workspace · keep off the projector</div>
+      <h1>Make the game yours.</h1>
+      <p>
+        Set up your quiz here, then run the live game from the dashboard.
+        Everything stays on this laptop.
+      </p>
+      <div id="message" class="message" role="status">Connecting…</div>
+      <section id="authPanel" class="panel">
+        <h2>Unlock host setup</h2>
+        <p>Use the private host key printed in the server terminal.</p>
+        <form id="authForm">
+          <label for="hostKey">Host key</label
+          ><input
+            id="hostKey"
+            type="password"
+            autocomplete="off"
+            required
+          /><button class="primary" style="margin-top: 14px">
+            Unlock setup
+          </button>
+        </form>
+      </section>
+      <section id="workspace" hidden>
+        <p id="lockNote" hidden>
+          This game has already started. Export the quiz now, or reset from the
+          dashboard to edit it for a new game.
+        </p>
+        <form id="setupForm">
+          <fieldset id="editor" style="border: 0; padding: 0; margin: 0">
+            <div class="panel">
+              <h2>Game settings</h2>
+              <label for="title">Game title</label
+              ><input id="title" maxlength="80" required /><label class="check"
+                ><input id="allowLateJoin" type="checkbox" />Allow new players
+                to join after the game starts</label
+              >
+              <p class="small">
+                Returning players can always recover their team. Correct answers
+                earn 100 points plus up to 50 for speed.
+              </p>
+            </div>
+            <div class="row">
+              <h2>Questions <span id="questionCount"></span></h2>
+              <div class="toolbar">
+                <button id="addQuestion" type="button">Add Question</button
+                ><button id="importButton" type="button">Import JSON</button>
+              </div>
+            </div>
+            <input
+              id="importFile"
+              type="file"
+              accept=".json,application/json"
+              hidden
+            />
+            <div id="questions"></div>
+            <div class="toolbar">
+              <button id="save" class="primary" type="submit">
+                Save Game Setup
+              </button>
+            </div>
+          </fieldset>
+        </form>
+        <div class="toolbar" style="margin-top: 18px">
+          <button id="exportQuiz">Export Quiz JSON</button
+          ><button id="reload">Reload Saved Setup</button>
+        </div>
+        <p class="small">
+          Choose the radio button beside the correct choice. Each question needs
+          four choices and a time limit. Save before starting. Exported quiz
+          files include answer keys.
+        </p>
+        <details id="recoveryDetails" class="panel">
+          <summary>Help a returning player</summary>
+          <p>
+            Players normally return automatically. If a player lost their
+            browser data, give them their recovery code privately. They can
+            enter it on the player join screen. Never project or share this
+            list.
+          </p>
+          <button id="refreshPlayers">Refresh Player Codes</button>
+          <div id="playerCodes"></div>
+        </details>
+      </section>
+    </main>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      "use strict";
+      const $ = (id) => document.getElementById(id),
+        socket = io();
+      let authorized = false,
+        state = null,
+        hostKey = location.hash.slice(1),
+        dirty = false,
+        draft = [],
+        loaded = false;
+      if (hostKey) {
+        try {
+          localStorage.setItem("triviaHostKey", hostKey);
+        } catch {}
+        history.replaceState(null, "", location.pathname);
+      } else {
+        try {
+          hostKey = localStorage.getItem("triviaHostKey") || "";
+        } catch {}
+      }
+      function message(text) {
+        $("message").textContent = text;
+      }
+      function request(event, data) {
+        return new Promise((resolve, reject) =>
+          socket.timeout(5000).emit(event, data, (err, response) => {
+            if (err)
+              reject(
+                new Error(
+                  "Connection interrupted. Reconnect and reload saved setup before retrying.",
+                ),
+              );
+            else if (response.error) reject(new Error(response.error));
+            else resolve(response);
+          }),
+        );
+      }
+      async function auth(key) {
+        try {
+          const response = await request("host:auth", key);
+          authorized = response.ok;
+          if (!authorized)
+            throw new Error(
+              "Incorrect host key. Use the key from the server terminal.",
+            );
+          hostKey = key;
+          try {
+            localStorage.setItem("triviaHostKey", key);
+          } catch {}
+          $("hostKey").value = "";
+          await load(false);
+          render();
+        } catch (e) {
+          message(e.message);
+          render();
+        }
+      }
+      async function load(discard) {
+        try {
+          const data = await request("host:setup", null);
+          if (!loaded || discard || !dirty) {
+            $("title").value = data.title;
+            $("allowLateJoin").checked = data.allowLateJoin;
+            draft = structuredClone(data.questions);
+            loaded = true;
+            dirty = false;
+            renderQuestions();
+          }
+          renderPlayers(data.players);
+          message(
+            dirty
+              ? "Your unsaved edits are still here. Save before starting."
+              : "Saved setup loaded. Make your changes, then save.",
+          );
+        } catch (e) {
+          message(e.message);
+        }
+      }
+      function renderPlayers(list) {
+        $("playerCodes").replaceChildren();
+        if (!list.length) {
+          const p = document.createElement("p");
+          p.textContent = "No players have joined yet.";
+          $("playerCodes").append(p);
+        }
+        for (const p of list) {
+          const row = document.createElement("div");
+          row.className = "person";
+          const name = document.createElement("strong");
+          name.textContent = p.name;
+          const code = document.createElement("code");
+          code.textContent = p.recoveryCode.match(/.{1,4}/g).join("-");
+          row.append(name, code);
+          $("playerCodes").append(row);
+        }
+      }
+      function render() {
+        $("authPanel").hidden = authorized;
+        $("workspace").hidden = !authorized;
+        $("editor").disabled =
+          !authorized || !socket.connected || state?.phase !== "lobby";
+        $("lockNote").hidden = !state || state.phase === "lobby";
+        $("save").disabled = !dirty;
+      }
+      function changed() {
+        dirty = true;
+        message("Unsaved changes. Save Game Setup before starting.");
+        render();
+      }
+      function renderQuestions() {
+        $("questions").replaceChildren();
+        $("questionCount").textContent = `(${draft.length}/100)`;
+        draft.forEach((q, index) => {
+          const card = document.createElement("section");
+          card.className = "questionCard";
+          const top = document.createElement("div");
+          top.className = "row";
+          const heading = document.createElement("h3");
+          heading.textContent = `Question ${index + 1}`;
+          const controls = document.createElement("div");
+          controls.className = "toolbar";
+          for (const [text, delta] of [
+            ["Move Up", -1],
+            ["Move Down", 1],
+          ]) {
+            const b = document.createElement("button");
+            b.type = "button";
+            b.textContent = text;
+            b.disabled = index + delta < 0 || index + delta >= draft.length;
+            b.onclick = () => {
+              [draft[index], draft[index + delta]] = [
+                draft[index + delta],
+                draft[index],
+              ];
+              changed();
+              renderQuestions();
+            };
+            controls.append(b);
+          }
+          const remove = document.createElement("button");
+          remove.type = "button";
+          remove.className = "danger";
+          remove.textContent = "Remove";
+          remove.disabled = draft.length === 1;
+          remove.onclick = () => {
+            draft.splice(index, 1);
+            changed();
+            renderQuestions();
+          };
+          controls.append(remove);
+          top.append(heading, controls);
+          card.append(top);
+          const label = document.createElement("label");
+          label.htmlFor = `q-${index}`;
+          label.textContent = "Question";
+          const text = document.createElement("textarea");
+          text.id = label.htmlFor;
+          text.value = q.question;
+          text.required = true;
+          text.maxLength = 500;
+          text.oninput = () => {
+            q.question = text.value;
+            changed();
+          };
+          card.append(label, text);
+          const grid = document.createElement("div");
+          grid.className = "grid";
+          q.options.forEach((option, choice) => {
+            const group = document.createElement("div");
+            const l = document.createElement("label");
+            l.htmlFor = `q-${index}-${choice}`;
+            l.textContent = `Choice ${"ABCD"[choice]}`;
+            const row = document.createElement("div");
+            row.className = "answerRow";
+            const radio = document.createElement("input");
+            radio.type = "radio";
+            radio.name = `answer-${index}`;
+            radio.checked = q.answer === choice;
+            radio.setAttribute(
+              "aria-label",
+              `Mark choice ${"ABCD"[choice]} correct for question ${index + 1}`,
+            );
+            radio.onchange = () => {
+              q.answer = choice;
+              changed();
+            };
+            const input = document.createElement("input");
+            input.id = l.htmlFor;
+            input.required = true;
+            input.maxLength = 200;
+            input.value = option;
+            input.oninput = () => {
+              q.options[choice] = input.value;
+              changed();
+            };
+            row.append(radio, input);
+            group.append(l, row);
+            grid.append(group);
+          });
+          card.append(grid);
+          const timeLabel = document.createElement("label");
+          timeLabel.htmlFor = `time-${index}`;
+          timeLabel.textContent = "Time limit (seconds)";
+          const time = document.createElement("input");
+          time.id = timeLabel.htmlFor;
+          time.type = "number";
+          time.min = 1;
+          time.max = 600;
+          time.step = 1;
+          time.required = true;
+          time.value = q.time;
+          time.oninput = () => {
+            q.time = Number(time.value);
+            changed();
+          };
+          card.append(timeLabel, time);
+          $("questions").append(card);
+        });
+        render();
+      }
+      socket.on("connect", () => {
+        if (hostKey) auth(hostKey);
+        else message("Enter the host key to begin.");
+      });
+      socket.on("disconnect", () => {
+        authorized = false;
+        message("Connection lost. Your unsaved edits remain in this page.");
+        render();
+      });
+      socket.on("connect_error", () =>
+        message("Server unavailable. Reconnecting automatically…"),
+      );
+      socket.on("state", (next) => {
+        state = next;
+        if (state.storageError) message(state.storageError);
+        render();
+      });
+      $("authForm").onsubmit = (e) => {
+        e.preventDefault();
+        auth($("hostKey").value.trim());
+      };
+      $("title").oninput = changed;
+      $("allowLateJoin").onchange = changed;
+      $("addQuestion").onclick = () => {
+        if (draft.length >= 100) return message("Maximum 100 questions.");
+        draft.push({
+          question: "",
+          options: ["", "", "", ""],
+          answer: 0,
+          time: 20,
+        });
+        changed();
+        renderQuestions();
+        $("questions").lastElementChild.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      };
+      $("setupForm").onsubmit = async (e) => {
+        e.preventDefault();
+        if (!dirty) return;
+        $("save").disabled = true;
+        try {
+          await request("host:saveSetup", {
+            title: $("title").value,
+            allowLateJoin: $("allowLateJoin").checked,
+            questions: draft,
+          });
+          dirty = false;
+          message(
+            "Game setup saved on the laptop. Return to the dashboard to start.",
+          );
+        } catch (e) {
+          message(e.message);
+        }
+        render();
+      };
+      $("reload").onclick = () => {
+        if (
+          !dirty ||
+          confirm("Discard your unsaved edits and reload the saved quiz?")
+        )
+          load(true);
+      };
+      $("refreshPlayers").onclick = async () => {
+        try {
+          const data = await request("host:setup", null);
+          renderPlayers(data.players);
+        } catch (e) {
+          message(e.message);
+        }
+      };
+      $("importButton").onclick = () => $("importFile").click();
+      $("importFile").onchange = async () => {
+        try {
+          const file = $("importFile").files[0];
+          if (!file) return;
+          if (file.size > 250000)
+            throw new Error("Choose a JSON file smaller than 250 KB.");
+          const data = JSON.parse(await file.text()),
+            list = Array.isArray(data) ? data : data.questions;
+          if (
+            !Array.isArray(list) ||
+            !list.length ||
+            list.length > 100 ||
+            list.some(
+              (q) =>
+                !q ||
+                typeof q.question !== "string" ||
+                !q.question.trim() ||
+                q.question.length > 500 ||
+                !Array.isArray(q.options) ||
+                q.options.length !== 4 ||
+                q.options.some(
+                  (o) => typeof o !== "string" || !o.trim() || o.length > 200,
+                ) ||
+                !Number.isInteger(q.answer) ||
+                q.answer < 0 ||
+                q.answer > 3 ||
+                !Number.isInteger(q.time) ||
+                q.time < 1 ||
+                q.time > 600,
+            )
+          )
+            throw new Error(
+              "Invalid quiz. Use 1–100 questions with four choices, answer index 0–3, and time 1–600.",
+            );
+          if (
+            dirty &&
+            !confirm("Replace your unsaved questions with the imported quiz?")
+          )
+            return;
+          draft = list.map((q) => ({
+            question: q.question,
+            options: q.options.slice(),
+            answer: q.answer,
+            time: q.time,
+          }));
+          if (!Array.isArray(data)) {
+            if (typeof data.title === "string")
+              $("title").value = data.title.slice(0, 80);
+            if (typeof data.allowLateJoin === "boolean")
+              $("allowLateJoin").checked = data.allowLateJoin;
+          }
+          changed();
+          renderQuestions();
+          message("Quiz imported. Review the questions, then save.");
+        } catch (e) {
+          message(e.message);
+        } finally {
+          $("importFile").value = "";
+        }
+      };
+      $("exportQuiz").onclick = () => {
+        const data = {
+          title: $("title").value,
+          allowLateJoin: $("allowLateJoin").checked,
+          questions: draft,
+        };
+        const url = URL.createObjectURL(
+            new Blob([JSON.stringify(data, null, 2)], {
+              type: "application/json",
+            }),
+          ),
+          a = document.createElement("a");
+        a.href = url;
+        a.download = "trivia-quiz.json";
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      };
+      window.addEventListener("beforeunload", (e) => {
+        if (dirty) {
+          e.preventDefault();
+          e.returnValue = "";
+        }
+      });
+    </script>
+  </body>
+</html>
