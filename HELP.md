@@ -215,4 +215,3 @@ People running the game only need the three pages listed in the README. These ar
 The server also serves static assets from `public/`. Private saved games in `data/` and the root-level `questions.json` are not served as static files.
 
 Client-to-server Socket.io events are `host:auth`, `host:setup`, `host:saveSetup`, `host:next`, `host:pause`, `host:reset`, `join`, `answer`, and `sync`. The server sends `state` updates and `kicked` notifications; `disconnect` is a built-in connection event. All host actions check authentication on the server.
-
