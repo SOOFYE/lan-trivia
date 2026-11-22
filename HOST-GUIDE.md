@@ -69,4 +69,4 @@ The supplied source and offline-ready ZIPs exclude this private directory, so sh
 
 ## Connecting without a router
 
-See **Option B: No Wi-Fi router — use the laptop's hotspot** in [README.md](README.md). Turn on the supported laptop hotspot first, connect the phones, then choose the laptop address matching the phone's Router/Gateway in the launcher. Wi-Fi hardware is still required, and Windows may refuse a hotspot without an upstream connection on some setups. The guide includes offline alternatives and the Windows firewall fix.
+Start with the short [README.md](README.md). For more detail, see **Option B: No Wi-Fi router — use the laptop's hotspot** in [HELP.md](HELP.md). Turn on the supported laptop hotspot first, connect the phones, then choose the laptop address matching the phone's Router/Gateway in the launcher. Wi-Fi hardware is still required, and Windows may refuse a hotspot without an upstream connection on some setups. The help page includes offline alternatives and the Windows firewall fix.
