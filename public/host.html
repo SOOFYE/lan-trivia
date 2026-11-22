@@ -630,11 +630,19 @@
         $("hostTools").hidden = !authorized;
         $("setupLink").href = `/setup.html#${encodeURIComponent(hostKey)}`;
         if (!state) return;
-        if (renderedURL !== state.joinURL) {
-          renderedURL = state.joinURL;
-          $("joinURL").textContent = renderedURL;
-          $("joinURL").href = renderedURL;
-          $("qr").innerHTML = qrSVG(renderedURL);
+        const addressKey = `${state.networkAvailable}:${state.joinURL}`;
+        if (renderedURL !== addressKey) {
+          renderedURL = addressKey;
+          if (state.networkAvailable) {
+            $("joinURL").textContent = state.joinURL;
+            $("joinURL").href = state.joinURL;
+            $("qr").innerHTML = qrSVG(state.joinURL);
+          } else {
+            $("joinURL").textContent = "Waiting for Wi-Fi or hotspot…";
+            $("joinURL").removeAttribute("href");
+            $("qr").textContent =
+              "Connect the laptop to your router, or turn on its hotspot. The QR code will appear automatically.";
+          }
         }
         const online = state.leaderboard.filter((p) => p.online).length;
         $("gameTitle").textContent = state.title;

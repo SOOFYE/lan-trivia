@@ -2,7 +2,7 @@
 
 ## Set up the game
 
-1. On Windows, double-click **START-GAME.cmd** in the extracted app folder. Choose automatic address detection for a router network, or select the address matching the phone's Router/Gateway for a laptop hotspot. You can also run `npm start` in the app folder. Open the private **Host** URL printed in the terminal. Your host key stays the same across restarts because it is saved locally.
+1. On Windows, double-click **START-GAME.cmd** in the extracted app folder. The game automatically detects a laptop hotspot or router connection; no address selection is needed. You can also run `npm start` in the app folder. Open the private **Host** URL printed in the terminal. Your host key stays the same across restarts because it is saved locally.
 2. Click **Game Setup**. This opens a separate private workspace; keep this tab off the projector because it includes answer keys and player recovery codes.
 3. Enter the game title and choose whether new players may join after the first question starts. Returning players can always recover their existing team.
 4. Edit each question and its four choices. Select the radio button beside the correct answer and set the time limit. You can add, remove, or reorder up to 100 questions. **Import JSON** accepts the original `questions.json` array or a quiz exported from this workspace.
@@ -69,4 +69,4 @@ The supplied source and offline-ready ZIPs exclude this private directory, so sh
 
 ## Connecting without a router
 
-Start with the short [README.md](README.md). For more detail, see **Option B: No Wi-Fi router — use the laptop's hotspot** in [HELP.md](HELP.md). Turn on the supported laptop hotspot first, connect the phones, then choose the laptop address matching the phone's Router/Gateway in the launcher. Wi-Fi hardware is still required, and Windows may refuse a hotspot without an upstream connection on some setups. The help page includes offline alternatives and the Windows firewall fix.
+Start with the short [README.md](README.md). For more detail, see **Option B: No Wi-Fi router — use the laptop's hotspot** in [HELP.md](HELP.md). Turn on the supported laptop hotspot, connect the phones, and run the game. Its address and QR update automatically, including after a network change. Keep the host dashboard open through `localhost` on the laptop. If phones were on an old address, connect them to the new Wi-Fi and scan the updated QR; use recovery codes if needed. Wi-Fi hardware is still required, and Windows may refuse a hotspot without an upstream connection on some setups. The help page includes offline alternatives and the Windows firewall fix.

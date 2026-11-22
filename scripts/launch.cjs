@@ -1,63 +1,20 @@
 "use strict";
 const os = require("node:os");
-const readline = require("node:readline/promises");
 const { createGameServer } = require("../server.js");
+const { selectAddresses } = require("../network.cjs");
 
 function networkChoices(interfaces = os.networkInterfaces()) {
-  return Object.entries(interfaces)
-    .flatMap(([name, list]) =>
-      (list || [])
-        .filter((a) => a.family === "IPv4" && !a.internal)
-        .map((a) => ({ name, ip: a.address })),
-    )
-    .sort((a, b) => {
-      const score = (a) =>
-        (a.ip === "192.168.137.1" ? 30 : 0) -
-        (/vpn|wsl|vethernet|vmware|vbox|docker/i.test(a.name) ? 20 : 0);
-      return score(b) - score(a);
-    });
+  return selectAddresses(interfaces);
 }
 
 async function launch() {
   console.log("\nLAN TRIVIA — START YOUR GAME\n");
   console.log(
-    "Using a laptop hotspot? Turn it on and connect a phone before continuing.",
+    "Connect phones to your Wi-Fi or laptop hotspot. The game finds its address automatically.",
   );
-  console.log("On that phone, open Wi-Fi details and find Router or Gateway.");
-  console.log(
-    "Select the matching laptop address below (often 192.168.137.1 for Windows hotspot).\n",
-  );
-  const choices = networkChoices();
-  console.log("0. Choose the address automatically (usual home/router setup)");
-  choices.forEach((a, i) =>
-    console.log(
-      `${i + 1}. ${a.name}: ${a.ip}${a.ip === "192.168.137.1" ? " — common Windows hotspot address; check your phone" : ""}`,
-    ),
-  );
-  const prompt = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-  let answer;
-  while (true) {
-    const text = (
-      await prompt.question(
-        "\nType a number, then press Enter (Enter = automatic): ",
-      )
-    ).trim();
-    answer = text === "" ? 0 : Number(text);
-    if (
-      /^\d*$/.test(text) &&
-      Number.isInteger(answer) &&
-      answer >= 0 &&
-      answer <= choices.length
-    )
-      break;
-    console.log("Please choose one of the numbers shown above.");
-  }
-  prompt.close();
-  if (answer) process.env.LAN_IP = choices[answer - 1].ip;
-  else delete process.env.LAN_IP;
+  // The double-click launcher always follows network changes. Advanced users
+  // may still deliberately pin LAN_IP when running server.js directly.
+  delete process.env.LAN_IP;
   console.log("\nStarting… Keep this window open while people are playing.");
   const app = createGameServer();
   try {
@@ -70,7 +27,7 @@ async function launch() {
     "\nOpen the private Host link above on this laptop. Phones use the Players link or QR code.",
   );
   console.log(
-    "Use Ctrl+C to stop. For a different network, stop and open START-GAME.cmd again.",
+    "Use Ctrl+C to stop. The Players link and QR update automatically if the network changes.",
   );
   let stopping = false;
   const stop = async () => {

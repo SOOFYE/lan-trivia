@@ -44,7 +44,7 @@ This is usually best for a room with several players.
 1. Connect the laptop to the router using **Ethernet or Wi-Fi**.
 2. Connect every phone to that router's Wi-Fi. A laptop on Ethernet and a phone on Wi-Fi can play together.
 3. Avoid a **Guest** network that prevents devices from communicating.
-4. Open **START-GAME.cmd**. Choose **0** for automatic address selection, then press Enter.
+4. Open **START-GAME.cmd**. The address is detected automatically; no number needs to be entered.
 5. Continue with [Open the dashboard](#open-the-dashboard-and-set-up-your-quiz).
 
 The router can be disconnected from the internet. It only needs power and a working local network.
@@ -78,16 +78,17 @@ Windows 10 uses similar names under **Settings → Network & Internet → Mobile
 
 **Connecting to hotspot Wi-Fi and joining the game are two separate steps.** The game's QR code opens the trivia page; it does not connect the phone to Wi-Fi for you.
 
-### 3. Choose the hotspot address in the game launcher
+### 3. Start the game — the address is automatic
 
-1. On one connected phone, tap the hotspot's Wi-Fi details. Find **Router** or **Gateway**. On some Android phones, it is under advanced network details.
-2. On the laptop, open **START-GAME.cmd**. It lists the laptop's available network addresses.
-3. Choose the number whose address matches the phone's **Router/Gateway**, then press Enter. A Windows hotspot often uses `192.168.137.1`, but **check your phone instead of assuming**.
-4. The laptop now prints a **Players** link and a private **Host** link. Open the Host link on the laptop. Its QR and visible player link will use the address you selected.
+1. On the laptop, open **START-GAME.cmd**. No address entry or selection is needed.
+2. The laptop prints a **Players** link and a private **Host** link. Open the Host link on the laptop. The dashboard's QR and visible player link use the detected address.
+3. When a supported Windows hotspot is active, the app prefers its address over Ethernet, Wi-Fi, VPN, and WSL addresses. Otherwise it prefers a usable local router connection.
 
 For example, **only if the phone says its Router is `192.168.137.1`**, its game URL will be `http://192.168.137.1:3000/`.
 
-If the matching address is not listed, close the launcher, make sure the hotspot is on and a phone is connected, then open the launcher again. If you change networks or turn the hotspot off and on with a new address, stop the game with **Ctrl+C**, then launch it again and choose the current address. Saved scores remain.
+The app watches for network changes while running. If the hotspot is switched on later, switched off, or assigned a different address, the link and QR update automatically after a few seconds; no game restart is needed. With no usable local network, the host page waits instead of showing a misleading VPN/WSL QR code. Keep the host page open through its `localhost` link so it remains reachable during network changes. Phones on the old address must connect to the new Wi-Fi and scan again. A different address is a different browser location, so use the player's recovery code if automatic return is unavailable; scores remain saved.
+
+The Windows probe reads local adapter and connection-sharing metadata; it does not enable the hotspot or change network settings. If Windows blocks that read, detection falls back to adapter names and assigned addresses. On unusual systems with multiple networks and no recognizable hotspot, check the phone's Router/Gateway against the printed Players link; advanced users can set `LAN_IP` with `npm start` as described below.
 
 For a small group, a supported laptop hotspot may be enough. For a large hall, use a suitable local router and test your expected number of devices; the game's player limit is not a promise of Wi-Fi capacity.
 
@@ -130,7 +131,7 @@ Try these in order:
 1. Keep the game's terminal window open. If it closed, run the launcher again.
 2. Make sure the phone is connected to the right Wi-Fi/hotspot. Check that it did not switch away because there is no internet.
 3. Type the **Players** URL exactly, starting with **http://** and ending in **:3000/**. Use the laptop's address. `localhost` on a phone refers to the phone itself.
-4. For a laptop hotspot, check that the URL's address matches **Router/Gateway** in the phone's Wi-Fi details. Choose that address in the launcher.
+4. For a laptop hotspot, wait a few seconds for detection and scan the dashboard's current QR again. If it still fails, compare the URL's address with **Router/Gateway** in the phone's Wi-Fi details. See the advanced override below for unusual adapter setups.
 5. Avoid guest Wi-Fi and disconnect VPNs while testing. Some school/office networks prevent local devices from reaching each other; ask the administrator or use your own approved local network.
 6. If the page works on the laptop but not the phone, check Windows Firewall below.
 
@@ -178,7 +179,7 @@ npm ci
 npm start
 ```
 
-Use `npm run launch` for the address-selection launcher. `npm start` uses automatic detection; to override it in PowerShell:
+Both `npm run launch` and `npm start` detect the connection automatically and update it while running. The double-click launcher always uses automatic mode. For an unusual network, advanced users can deliberately pin an address with `npm start` in PowerShell (a pinned address stays fixed until removed):
 
 ```powershell
 $env:LAN_IP = Read-Host 'Enter the laptop address reachable from the phones'
@@ -195,7 +196,7 @@ npm test
 
 Tests exercise authenticated setup, validation, player recovery, answer locking, pause, disk-before-acknowledgment behavior, restart/crash recovery, scoring once, save-failure rollback, final results, reset revocation, corrupt-save backup recovery, and private-data HTTP 404 responses. GitHub Actions runs the suite on Node.js 22 and 24.
 
-The server binds to `0.0.0.0:3000`, stores private state outside `public/`, and refreshes its automatically selected LAN address after adapter changes. The launcher's manually selected address stays fixed for that run. Files in `data/`, `node_modules/`, and local environment files are excluded from Git.
+The server binds to `0.0.0.0:3000` and checks local addresses every two seconds. On Windows, it reads active adapter descriptions and Internet Connection Sharing private-side metadata at startup, after adapter-address changes, and periodically; a Windows read may take up to five seconds before falling back. Hotspots take priority over other local adapters. Windows queries run hidden and do not require an approval prompt. An explicit `LAN_IP` override is honored only for direct server runs. Private state stays outside `public/`; `data/`, `node_modules/`, and local environment files are excluded from Git.
 
 Reference documentation: [Socket.io server options](https://socket.io/docs/v4/server-options/), [Express setup](https://expressjs.com/en/starter/installing/), and [Windows hotspot setup](https://support.microsoft.com/en-us/windows/experience/connectivity-networking/use-your-windows-device-as-a-mobile-hotspot). None of these sites is contacted by the running game.
 

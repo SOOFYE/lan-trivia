@@ -1,12 +1,12 @@
 "use strict";
 const express = require("express"),
-  http = require("node:http"),
-  os = require("node:os");
+  http = require("node:http");
 const fs = require("node:fs"),
   path = require("node:path"),
   crypto = require("node:crypto");
 const { performance } = require("node:perf_hooks");
 const { Server } = require("socket.io");
+const { createNetworkDetector } = require("./network.cjs");
 function validateQuestions(list) {
   if (!Array.isArray(list) || list.length < 1 || list.length > 100)
     throw new Error("Use 1–100 questions.");
@@ -39,24 +39,9 @@ function validateQuestions(list) {
     };
   });
 }
-function lanAddresses() {
-  const addresses = Object.entries(os.networkInterfaces()).flatMap(
-    ([name, list]) =>
-      (list || [])
-        .filter((a) => a.family === "IPv4" && !a.internal)
-        .map((a) => ({ name, ip: a.address })),
-  );
-  const rank = (a) =>
-    (/^(192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.)/.test(a.ip) ? 10 : 0) -
-    (/virtual|vmware|vbox|vethernet|vpn|docker|wsl|tun|tap/i.test(a.name)
-      ? 20
-      : 0);
-  addresses.sort((a, b) => rank(b) - rank(a));
-  return addresses;
-}
 function createGameServer(options = {}) {
-  const addresses = lanAddresses();
-  const ip = process.env.LAN_IP || addresses[0]?.ip || "127.0.0.1",
+  const detectNetwork = options.detectNetwork || createNetworkDetector();
+  const ip = process.env.LAN_IP || "127.0.0.1",
     port = options.port ?? 3000;
   if (
     !/^\d{1,3}(\.\d{1,3}){3}$/.test(ip) ||
@@ -251,6 +236,7 @@ function createGameServer(options = {}) {
       index: game.index,
       total: game.questions.length,
       joinURL,
+      networkAvailable,
       remaining: Math.ceil(millis() / 1000),
       duration: q?.time || 0,
       question: q ? { question: q.question, options: q.options } : null,
@@ -571,27 +557,43 @@ function createGameServer(options = {}) {
       broadcast();
     });
   });
-  // Refresh the QR URL after an adapter reconnects or DHCP changes its address.
-  const networkTicker = setInterval(() => {
-    if (!server.listening) return;
-    const detected = lanAddresses();
-    const physical = detected.find(
-      (a) =>
-        !/virtual|vmware|vbox|vethernet|vpn|docker|wsl|tun|tap/i.test(a.name),
-    );
-    const currentIP = process.env.LAN_IP || physical?.ip;
-    if (!currentIP) return; // Retain the last address during a transient disconnect.
-    const nextURL = `http://${currentIP}:${server.address().port}/`;
-    if (nextURL !== joinURL) {
-      joinURL = nextURL;
-      console.log(`LAN join URL updated: ${joinURL}`);
-      broadcast();
+  let refreshingNetwork = false,
+    closing = false,
+    networkAvailable = false;
+  async function refreshNetwork() {
+    if (refreshingNetwork || closing || !server.listening) return;
+    refreshingNetwork = true;
+    try {
+      const detected = await detectNetwork();
+      if (closing) return;
+      const currentIP = process.env.LAN_IP || detected.ip;
+      const nextURL = `http://${currentIP}:${server.address().port}/`;
+      networkAvailable = currentIP !== "127.0.0.1";
+      if (nextURL !== joinURL) {
+        joinURL = nextURL;
+        console.log(
+          networkAvailable
+            ? `Players link / QR updated: ${joinURL}`
+            : "No local network detected. Turn on the hotspot or connect the laptop to your router.",
+        );
+        broadcast();
+      }
+      return detected;
+    } catch (error) {
+      console.warn("Network detection will retry:", error.message);
+    } finally {
+      refreshingNetwork = false;
     }
-  }, 5000);
+  }
+  const networkTicker = setInterval(
+    refreshNetwork,
+    options.networkIntervalMs || 2000,
+  );
   const ready = new Promise((resolve, reject) => {
     server.once("error", reject);
-    server.listen(port, "0.0.0.0", () => {
+    server.listen(port, "0.0.0.0", async () => {
       joinURL = `http://${ip}:${server.address().port}/`;
+      const detected = await refreshNetwork();
       console.log(
         `\nLAN TRIVIA\nPlayers: ${joinURL}\nHost (private): http://localhost:${server.address().port}/host.html#${hostKey}\nHost key: ${hostKey}`,
       );
@@ -600,16 +602,23 @@ function createGameServer(options = {}) {
       );
       console.log(
         "Detected adapters:",
-        addresses.map((a) => `${a.name}: ${a.ip}`).join(", ") || "none",
+        (detected?.addresses || [])
+          .map((a) => `${a.name}: ${a.ip}`)
+          .join(", ") || "none",
       );
       if (game.phase === "paused")
         console.log(
           "Restored question paused. Use Resume Question on the host dashboard.",
         );
+      if (!networkAvailable)
+        console.warn(
+          "Waiting for a router or laptop hotspot. The QR will update automatically when one is available.",
+        );
       resolve();
     });
   });
   async function close() {
+    closing = true;
     clearInterval(ticker);
     clearInterval(networkTicker);
     if (game.phase === "question")

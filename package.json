@@ -6,7 +6,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node tests/game.test.cjs",
+    "test": "node tests/game.test.cjs && node --test tests/network.test.cjs",
     "launch": "node scripts/launch.cjs"
   },
   "engines": {

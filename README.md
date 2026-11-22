@@ -12,7 +12,7 @@ Do this while you have internet. Phones do not need anything installed.
 ## Start a game
 
 1. **Connect everyone:** laptop and phones must use the same router. The laptop can use an Ethernet cable. No router? See **Laptop hotspot** below.
-2. Double-click **START-GAME.cmd**. For a router, press **Enter** when asked to choose an address. **Keep the black window open.**
+2. Double-click **START-GAME.cmd**. It finds the connection address automatically. **Keep the black window open.**
 3. Copy the **Host (private)** link from that window into the laptop's browser. If asked for a key, use the **Host key** printed there.
 4. Click **Game Setup** → edit questions → **Save Game Setup**. Return to the dashboard.
 5. Players connect to the same Wi-Fi, scan the dashboard's QR code, enter a name, and join.
@@ -22,7 +22,7 @@ Do this while you have internet. Phones do not need anything installed.
 
 1. On the laptop: **Settings → Network & internet → Mobile hotspot**. Choose **Share over: Wi-Fi**, set a name/password, and turn it on.
 2. Connect phones to that Wi-Fi. If they say **No internet**, choose **Stay connected**.
-3. Open **START-GAME.cmd**. Choose the address matching **Router/Gateway** in a connected phone's Wi-Fi details. Continue from step 3 above.
+3. Open **START-GAME.cmd**. It detects the hotspot automatically. Continue from step 3 above.
 
 The laptop needs Wi-Fi hardware. If Windows will not turn the hotspot on, use [hotspot help](HELP.md#option-b-no-wi-fi-router--use-the-laptops-hotspot).
 
@@ -37,6 +37,8 @@ Open these **on the laptop**, after starting the game:
 | Player screen | [http://localhost:3000/](http://localhost:3000/) — `/index.html` opens the same page |
 
 **On phones:** scan the QR or use the **Players** link printed in the black window. **Do not use `localhost` on a phone.** Connect to Wi-Fi before scanning; the game QR does not connect Wi-Fi for you.
+
+**Changed networks?** The link and QR update automatically. Connect phones to the new Wi-Fi and scan again. Use a recovery code if asked to restore your team.
 
 **Stop:** press **Ctrl+C** in the black window. Reopen **START-GAME.cmd** later to continue saved progress. **Reset Game** clears players and scores; export scores first.
 
