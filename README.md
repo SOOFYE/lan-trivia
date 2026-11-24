@@ -18,6 +18,8 @@ Do this while you have internet. Phones do not need anything installed.
 5. Players connect to the same Wi-Fi, scan the dashboard's QR code, enter a name, and join.
 6. Click **Start Game**, then **Next Question** after each answer reveal.
 
+**Projector controls:** use **Fullscreen Leaderboard** for a big score table with correct/wrong totals. **Hide QR Code / Show QR Code** controls the QR. For shortlisted teams, open **Custom Leaderboard**, add names and your own scores, then use **Fullscreen Custom Board**. Press **Esc** or **Exit Fullscreen** to return.
+
 ## Laptop hotspot — no router
 
 1. On the laptop: **Settings → Network & internet → Mobile hotspot**. Choose **Share over: Wi-Fi**, set a name/password, and turn it on.
@@ -34,6 +36,7 @@ Open these **on the laptop**, after starting the game:
 | --- | --- |
 | Host dashboard / projector | [http://localhost:3000/host.html](http://localhost:3000/host.html) |
 | Edit questions / game setup | [http://localhost:3000/setup.html](http://localhost:3000/setup.html) |
+| Shortlisted teams / manual scores | [http://localhost:3000/custom.html](http://localhost:3000/custom.html) |
 | Player screen | [http://localhost:3000/](http://localhost:3000/) — `/index.html` opens the same page |
 
 **On phones:** scan the QR or use the **Players** link printed in the black window. **Do not use `localhost` on a phone.** Connect to Wi-Fi before scanning; the game QR does not connect Wi-Fi for you.

@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>LAN Trivia · Host</title>
+    <link rel="stylesheet" href="/presentation.css" />
     <style>
       :root {
         color-scheme: dark;
@@ -286,6 +287,9 @@
         outline: 3px solid #b6f568;
         outline-offset: 3px;
       }
+      #liveLeaderboard > .line {
+        flex-wrap: wrap;
+      }
       #gameTitle {
         display: block;
         font-size: 16px;
@@ -373,6 +377,17 @@
             rel="noopener"
             >Game Setup</a
           ><button id="exportResults" class="utility">Export Scores CSV</button>
+          <button id="toggleQR" class="utility" aria-pressed="false">
+            Hide QR Code
+          </button>
+          <a
+            id="customLink"
+            class="utility"
+            href="/custom.html"
+            target="_blank"
+            rel="noopener"
+            >Custom Leaderboard</a
+          >
         </div>
         <p id="notice" role="status"></p>
         <p id="storageError" role="alert"></p>
@@ -382,33 +397,49 @@
           on this laptop. Returning players retain their scores.
         </div>
       </section>
-      <section class="panel">
+      <section class="panel" id="liveLeaderboard">
         <div class="line">
           <h2>Leaderboard</h2>
-          <span class="eyebrow">Live standings</span>
+          <div class="presentation-actions">
+            <button
+              class="utility enter-presentation"
+              data-present-target="liveLeaderboard"
+            >
+              Fullscreen Leaderboard</button
+            ><button class="utility exit-presentation" data-present-exit>
+              Exit Fullscreen
+            </button>
+          </div>
         </div>
-        <p class="muted">The room’s sharpest minds, ranked.</p>
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Team / player</th>
-              <th>Answer</th>
-              <th>Points</th>
-            </tr>
-          </thead>
-          <tbody id="leaders"></tbody>
-        </table>
+        <p class="muted board-caption">The room’s sharpest minds, ranked.</p>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Team / player</th>
+                <th class="number">Correct</th>
+                <th class="number">Wrong</th>
+                <th class="number">No answer</th>
+                <th>Answer</th>
+                <th>Points</th>
+              </tr>
+            </thead>
+            <tbody id="leaders"></tbody>
+          </table>
+        </div>
         <div id="empty" class="empty">
           The stage is set.<br />Teams will appear here as they join.
         </div>
         <div class="foot">
           ✓ Locked · — Thinking · Offline teams retain their scores.<br />Tied
-          scores share a rank.
+          scores share a rank. Counts update after each reveal; “No answer”
+          means a question missed while the team was registered.
         </div>
       </section>
     </main>
     <script src="/socket.io/socket.io.js"></script>
+    <script src="/presentation.js"></script>
     <script>
       "use strict";
       // Embedded QR encoder: Model 2, version 3, level L, byte mode, fixed mask 0.
@@ -520,7 +551,11 @@
       let state,
         authorized = false,
         hostKey = location.hash.slice(1),
-        renderedURL = "";
+        renderedURL = "",
+        qrHidden = false;
+      try {
+        qrHidden = localStorage.getItem("triviaQrHidden") === "true";
+      } catch {}
       if (hostKey) {
         try {
           localStorage.setItem("triviaHostKey", hostKey);
@@ -590,6 +625,13 @@
       }
       $("next").addEventListener("click", () => command("host:next"));
       $("pause").addEventListener("click", () => command("host:pause"));
+      $("toggleQR").addEventListener("click", () => {
+        qrHidden = !qrHidden;
+        try {
+          localStorage.setItem("triviaQrHidden", String(qrHidden));
+        } catch {}
+        render();
+      });
       $("reset").addEventListener("click", () => {
         if (
           confirm(
@@ -606,10 +648,21 @@
           return '"' + text.replace(/"/g, '""') + '"';
         };
         const rows = [
-          ["Rank", "Player / team", "Score", "Online"],
+          [
+            "Rank",
+            "Player / team",
+            "Correct",
+            "Wrong",
+            "No answer",
+            "Score",
+            "Online",
+          ],
           ...state.leaderboard.map((p) => [
             1 + state.leaderboard.filter((o) => o.score > p.score).length,
             p.name,
+            p.correct,
+            p.wrong,
+            p.unanswered,
             p.score,
             p.online ? "Yes" : "No",
           ]),
@@ -629,6 +682,10 @@
         $("auth").hidden = authorized;
         $("hostTools").hidden = !authorized;
         $("setupLink").href = `/setup.html#${encodeURIComponent(hostKey)}`;
+        $("customLink").href = `/custom.html#${encodeURIComponent(hostKey)}`;
+        $("qr").hidden = qrHidden;
+        $("toggleQR").textContent = qrHidden ? "Show QR Code" : "Hide QR Code";
+        $("toggleQR").setAttribute("aria-pressed", String(qrHidden));
         if (!state) return;
         const addressKey = `${state.networkAvailable}:${state.joinURL}`;
         if (renderedURL !== addressKey) {
@@ -726,6 +783,9 @@
             span.textContent = "Offline";
             name.append(span);
           }
+          td(p.correct, "number answer-correct");
+          td(p.wrong, "number answer-wrong");
+          td(p.unanswered, "number answer-missed");
           td(
             state.index < 0 ? "—" : p.answered ? "✓ Locked" : "—",
             p.answered ? "lock" : "muted",

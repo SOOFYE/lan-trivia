@@ -202,7 +202,7 @@ Reference documentation: [Socket.io server options](https://socket.io/docs/v4/se
 
 ## Internal endpoints for developers
 
-People running the game only need the three pages listed in the README. These are all application page and connection endpoints; there is no separate REST API:
+People running the game only need the four pages listed in the README. These are all application page and connection endpoints; there is no separate REST API:
 
 | Path | Purpose |
 | --- | --- |
@@ -210,9 +210,11 @@ People running the game only need the three pages listed in the README. These ar
 | `/index.html` | Player page. |
 | `/host.html` | Host dashboard and projector page. Host key required for controls. |
 | `/setup.html` | Private quiz editor and player recovery workspace. Host key required for data/actions. |
+| `/custom.html` | Independent manual leaderboard for shortlisted teams. Host key required to edit; supports fullscreen display. |
+| `/presentation.js`, `/presentation.css` | Local fullscreen/fallback controls and styling for both leaderboards. |
 | `/socket.io/socket.io.js` | Local Socket.io browser client; loaded automatically by the pages. |
 | `/socket.io/` | Socket.io / Engine.IO connection path for polling and WebSocket traffic. Not a page to open manually. |
 
 The server also serves static assets from `public/`. Private saved games in `data/` and the root-level `questions.json` are not served as static files.
 
-Client-to-server Socket.io events are `host:auth`, `host:setup`, `host:saveSetup`, `host:next`, `host:pause`, `host:reset`, `join`, `answer`, and `sync`. The server sends `state` updates and `kicked` notifications; `disconnect` is a built-in connection event. All host actions check authentication on the server.
+Client-to-server Socket.io events are `host:auth`, `host:setup`, `host:saveSetup`, `host:next`, `host:pause`, `host:reset`, `join`, `answer`, `sync`, `custom:rename`, `custom:addTeam`, `custom:updateTeam`, `custom:adjustScore`, `custom:removeTeam`, and `custom:clear`. The server sends `state` updates and `kicked` notifications; `disconnect` is a built-in connection event. All host and custom-edit actions check authentication on the server. Custom teams are persisted in `game-state.json` separately from player records. Existing version-2 saves without a custom board are migrated automatically without losing quiz progress.

@@ -1,0 +1,76 @@
+.presentation-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.exit-presentation {
+  display: none;
+}
+.presenting {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100dvh !important;
+  max-width: none !important;
+  z-index: 10000;
+  background: #101523 !important;
+  color: #f4f6fc;
+  padding: clamp(16px, 3vw, 50px) !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  overflow: auto !important;
+  box-sizing: border-box;
+}
+.presenting h2 {
+  font-size: clamp(28px, 3.4vw, 56px);
+}
+.presenting td {
+  font-size: clamp(18px, 2.4vw, 38px);
+  padding: 22px 12px;
+}
+.presenting th {
+  font-size: clamp(14px, 1.4vw, 22px);
+  padding: 20px 12px;
+}
+.presenting .exit-presentation {
+  display: inline-block;
+}
+.presenting .enter-presentation,
+.presenting .editor-controls {
+  display: none !important;
+}
+.table-scroll {
+  overflow-x: auto;
+}
+.presenting .table-scroll {
+  overflow: visible;
+}
+.presenting .board-caption {
+  font-size: clamp(16px, 1.5vw, 24px);
+}
+.number {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.answer-correct {
+  color: #b6f568;
+}
+.answer-wrong {
+  color: #ffb2c1;
+}
+.answer-missed {
+  color: #b8c4dc;
+}
+@media (max-width: 700px) {
+  .presenting .table-scroll {
+    overflow-x: auto;
+  }
+  .presenting td {
+    padding: 16px 8px;
+  }
+  .presenting th {
+    padding: 14px 8px;
+  }
+}

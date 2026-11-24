@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>LAN Trivia · Custom Leaderboard</title>
+    <link rel="stylesheet" href="/presentation.css" />
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background: #101523;
+        color: #f4f6fc;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 28px;
+      }
+      header {
+        max-width: 1500px;
+        margin: 0 auto 28px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+      }
+      .brand {
+        font-weight: 850;
+        letter-spacing: 3px;
+        font-size: 20px;
+      }
+      a {
+        color: #b6f568;
+      }
+      main {
+        max-width: 1500px;
+        margin: auto;
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(270px, 0.65fr) minmax(0, 1.35fr);
+        gap: 24px;
+        align-items: start;
+      }
+      .layout.read-only {
+        grid-template-columns: 1fr;
+      }
+      .panel {
+        background: #192135;
+        border: 1px solid #35415a;
+        border-radius: 22px;
+        padding: 26px;
+        margin-bottom: 24px;
+      }
+      h1 {
+        font-size: 36px;
+        margin: 12px 0;
+      }
+      h2 {
+        font-size: 28px;
+        margin: 0;
+      }
+      h3 {
+        font-size: 20px;
+        margin: 0 0 16px;
+      }
+      p {
+        color: #b7c4dc;
+        line-height: 1.6;
+      }
+      .eyebrow {
+        color: #b6f568;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+      }
+      .line {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        flex-wrap: wrap;
+      }
+      .toolbar {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 16px;
+      }
+      label {
+        display: block;
+        margin: 16px 0 8px;
+        font-size: 16px;
+        font-weight: 650;
+      }
+      input,
+      select,
+      button {
+        font: inherit;
+        font-size: 16px;
+        min-height: 48px;
+        border-radius: 10px;
+        padding: 12px;
+      }
+      input,
+      select {
+        width: 100%;
+        border: 1px solid #52617e;
+        background: #101523;
+        color: white;
+      }
+      button {
+        font-weight: 700;
+        border: 1px solid #52617e;
+        background: #29374f;
+        color: white;
+        cursor: pointer;
+      }
+      .primary {
+        background: #b6f568;
+        color: #172315;
+        border-color: #b6f568;
+      }
+      .danger {
+        color: #ffb2c1;
+      }
+      button:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+      button:focus-visible,
+      input:focus-visible,
+      select:focus-visible,
+      a:focus-visible {
+        outline: 3px solid #b6f568;
+        outline-offset: 3px;
+      }
+      .small {
+        font-size: 14px;
+        color: #acbdd8;
+      }
+      #notice {
+        min-height: 28px;
+        color: #c8f79a;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 24px;
+      }
+      th {
+        text-align: left;
+        font-size: 14px;
+        font-weight: 500;
+        color: #b9c7df;
+        padding: 14px 10px;
+      }
+      td {
+        font-size: 23px;
+        padding: 20px 10px;
+        border-top: 1px solid #35415a;
+      }
+      td:nth-child(2) {
+        overflow-wrap: anywhere;
+      }
+      .rank {
+        color: #b6f568;
+        width: 45px;
+      }
+      .row-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .row-actions button {
+        font-size: 14px;
+        padding: 8px 12px;
+        min-height: 40px;
+      }
+      .empty {
+        padding: 40px 0;
+        color: #b8c7e0;
+      }
+      #authForm {
+        max-width: 600px;
+      }
+      .auth-row {
+        display: flex;
+        gap: 12px;
+        align-items: end;
+        flex-wrap: wrap;
+      }
+      .auth-row div {
+        flex: 1;
+        min-width: 220px;
+      }
+      #storageError {
+        color: #ffb2c1;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      @media (max-width: 1000px) {
+        body {
+          padding: 16px;
+        }
+        .layout {
+          grid-template-columns: 1fr;
+        }
+        .panel {
+          padding: 22px;
+        }
+        td {
+          font-size: 20px;
+        }
+      }
+      @media print {
+        header,
+        #editor,
+        #authPanel,
+        #notice,
+        .presentation-actions,
+        .editor-controls {
+          display: none !important;
+        }
+        .layout {
+          display: block;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <span class="brand">LAN / TRIVIA</span
+      ><a href="/host.html">Back to dashboard</a
+      ><span id="connection" class="small" role="status">Connecting…</span>
+    </header>
+    <main>
+      <div class="eyebrow">Your next round</div>
+      <h1>Custom leaderboard</h1>
+      <p>
+        Shortlist teams from the quiz or type new names. You control these
+        scores. They stay separate from quiz points.
+      </p>
+      <p id="notice" role="status"></p>
+      <p id="storageError" role="alert"></p>
+      <section id="authPanel" class="panel">
+        <h3>Unlock editing</h3>
+        <form id="authForm">
+          <div class="auth-row">
+            <div>
+              <label for="key">Host key (from the game window)</label
+              ><input id="key" type="password" autocomplete="off" required />
+            </div>
+            <button class="primary">Unlock controls</button>
+          </div>
+        </form>
+      </section>
+      <div class="layout">
+        <section id="editor" hidden>
+          <div class="panel">
+            <h3>Board title</h3>
+            <form id="titleForm">
+              <label for="boardTitle">Title shown on the projector</label
+              ><input id="boardTitle" maxlength="80" required />
+              <div class="toolbar">
+                <button id="saveTitle">Save Title</button>
+              </div>
+            </form>
+          </div>
+          <div class="panel">
+            <h3 id="formTitle">Add a shortlisted team</h3>
+            <label for="quizTeam">Choose from quiz teams (optional)</label
+            ><select id="quizTeam">
+              <option value="">Type a new team below</option>
+            </select>
+            <form id="teamForm">
+              <label for="teamName">Team name</label
+              ><input
+                id="teamName"
+                maxlength="28"
+                required
+                autocomplete="off"
+              /><label for="teamScore">Score — type the total you want</label
+              ><input
+                id="teamScore"
+                type="number"
+                step="1"
+                min="-1000000000"
+                max="1000000000"
+                value="0"
+                required
+              />
+              <div class="toolbar">
+                <button id="saveTeam" class="primary">Add Team</button
+                ><button id="cancelEdit" type="button" hidden>
+                  Cancel Edit
+                </button>
+              </div>
+            </form>
+            <p class="small">
+              Quiz points are not copied automatically. Set a starting score,
+              then use Edit or the +10 / −10 buttons.
+            </p>
+          </div>
+          <div class="panel">
+            <h3>Keep or clear results</h3>
+            <div class="toolbar">
+              <button id="exportScores">Export Custom Scores CSV</button
+              ><button id="clearBoard" class="danger">
+                Clear Custom Teams
+              </button>
+            </div>
+            <p class="small">
+              Changes save automatically on the laptop. Resetting the quiz keeps
+              this board. Clear Custom Teams clears this board only.
+            </p>
+          </div>
+        </section>
+        <section id="customLeaderboard" class="panel">
+          <div class="line">
+            <h2 id="boardHeading">Shortlisted Teams</h2>
+            <div class="presentation-actions">
+              <button
+                class="enter-presentation"
+                data-present-target="customLeaderboard"
+              >
+                Fullscreen Custom Board</button
+              ><button class="exit-presentation" data-present-exit>
+                Exit Fullscreen
+              </button>
+            </div>
+          </div>
+          <p class="board-caption small">
+            Manual scores · sorted highest first · tied scores share a rank
+          </p>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Team</th>
+                  <th class="number">Points</th>
+                  <th id="actionsHeading" class="editor-controls" hidden>
+                    Change score
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="teams"></tbody>
+            </table>
+          </div>
+          <p id="empty" class="empty">
+            Add your shortlisted teams to start the next round.
+          </p>
+        </section>
+      </div>
+    </main>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/presentation.js"></script>
+    <script>
+      "use strict";
+      const $ = (id) => document.getElementById(id),
+        socket = io();
+      let state,
+        authorized = false,
+        editing = null,
+        sourceId = null,
+        titleDirty = false,
+        tableKey = "",
+        optionsKey = "",
+        busy = false;
+      let hostKey = location.hash.slice(1);
+      if (hostKey) {
+        try {
+          localStorage.setItem("triviaHostKey", hostKey);
+        } catch {}
+        history.replaceState(null, "", location.pathname);
+      } else {
+        try {
+          hostKey =
+            localStorage.getItem("triviaHostKey") ||
+            sessionStorage.getItem("triviaHostKey") ||
+            "";
+        } catch {}
+      }
+      function request(event, data) {
+        return new Promise((resolve, reject) =>
+          socket
+            .timeout(5000)
+            .emit(event, data, (err, response) =>
+              err
+                ? reject(
+                    new Error(
+                      "Connection interrupted. Check the board before trying again.",
+                    ),
+                  )
+                : response.error
+                  ? reject(new Error(response.error))
+                  : resolve(response),
+            ),
+        );
+      }
+      async function action(event, data) {
+        if (!authorized || !socket.connected || busy) return false;
+        busy = true;
+        render();
+        try {
+          await request(event, data);
+          $("notice").textContent = "Saved.";
+          return true;
+        } catch (error) {
+          $("notice").textContent = error.message;
+          return false;
+        } finally {
+          busy = false;
+          render();
+        }
+      }
+      async function authenticate(key) {
+        try {
+          const response = await request("host:auth", key);
+          authorized = response.ok;
+          if (authorized) {
+            hostKey = key;
+            try {
+              localStorage.setItem("triviaHostKey", key);
+            } catch {}
+            $("key").value = "";
+          }
+          $("notice").textContent = authorized
+            ? "Host controls unlocked. Add your shortlisted teams below."
+            : "Use the host key printed in the game window.";
+        } catch (error) {
+          $("notice").textContent = error.message;
+        }
+        render();
+      }
+      function newTeam() {
+        editing = null;
+        sourceId = null;
+        $("teamForm").reset();
+        $("quizTeam").value = "";
+        $("formTitle").textContent = "Add a shortlisted team";
+        $("saveTeam").textContent = "Add Team";
+        $("cancelEdit").hidden = true;
+      }
+      function editTeam(team) {
+        editing = { id: team.id, revision: team.revision };
+        sourceId = team.sourceId;
+        $("teamName").value = team.name;
+        $("teamScore").value = team.score;
+        $("formTitle").textContent = "Edit team and score";
+        $("saveTeam").textContent = "Save Team";
+        $("cancelEdit").hidden = false;
+        $("teamName").focus();
+      }
+      socket.on("connect", () => {
+        $("connection").textContent = "LAN connected";
+        if (hostKey) authenticate(hostKey);
+        socket.emit("sync");
+        render();
+      });
+      socket.on("disconnect", () => {
+        authorized = false;
+        $("connection").textContent = "Disconnected · reconnecting…";
+        render();
+      });
+      socket.on("connect_error", () => {
+        $("connection").textContent = "Server unavailable · reconnecting…";
+      });
+      socket.on("state", (next) => {
+        state = next;
+        render();
+      });
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) socket.emit("sync");
+      });
+      $("authForm").onsubmit = (event) => {
+        event.preventDefault();
+        authenticate($("key").value.trim());
+      };
+      $("boardTitle").oninput = () => {
+        titleDirty = true;
+      };
+      $("titleForm").onsubmit = async (event) => {
+        event.preventDefault();
+        if (await action("custom:rename", { title: $("boardTitle").value })) {
+          titleDirty = false;
+          render();
+        }
+      };
+      $("quizTeam").onchange = () => {
+        const id = $("quizTeam").value;
+        newTeam();
+        $("quizTeam").value = id;
+        const team = state?.leaderboard.find((p) => p.id === id);
+        if (team) {
+          sourceId = team.id;
+          $("teamName").value = team.name;
+        }
+      };
+      $("teamForm").onsubmit = async (event) => {
+        event.preventDefault();
+        const data = {
+          name: $("teamName").value,
+          score: Number($("teamScore").value),
+        };
+        const ok = editing
+          ? await action("custom:updateTeam", { ...data, ...editing })
+          : await action("custom:addTeam", { ...data, sourceId });
+        if (ok) newTeam();
+      };
+      $("cancelEdit").onclick = newTeam;
+      $("clearBoard").onclick = async () => {
+        if (
+          confirm(
+            "Clear all custom teams and their manual scores? Quiz results will be kept. Export custom scores first if needed.",
+          )
+        ) {
+          if (await action("custom:clear", null)) newTeam();
+        }
+      };
+      $("exportScores").onclick = () => {
+        if (!state || !authorized) return;
+        const teams = state.customLeaderboard.teams;
+        const cell = (value) => {
+          let text = String(value);
+          if (/^[=+@\-\t\r\n]/.test(text)) text = "'" + text;
+          return '"' + text.replace(/"/g, '""') + '"';
+        };
+        const rows = [
+          ["Rank", "Team", "Score"],
+          ...teams.map((t) => [
+            1 + teams.filter((o) => o.score > t.score).length,
+            t.name,
+            t.score,
+          ]),
+        ];
+        const url = URL.createObjectURL(
+            new Blob(
+              ["\uFEFF" + rows.map((r) => r.map(cell).join(",")).join("\r\n")],
+              { type: "text/csv;charset=utf-8" },
+            ),
+          ),
+          a = document.createElement("a");
+        a.href = url;
+        a.download = "custom-leaderboard.csv";
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      };
+      function render() {
+        $("authPanel").hidden = authorized;
+        document
+          .querySelector(".layout")
+          .classList.toggle("read-only", !authorized);
+        $("editor").hidden = !authorized;
+        $("actionsHeading").hidden = !authorized;
+        document
+          .querySelectorAll("#editor button,#editor input,#editor select")
+          .forEach((element) => {
+            element.disabled = busy || !socket.connected;
+          });
+        if (!state) return;
+        const board = state.customLeaderboard;
+        $("boardHeading").textContent = board.title;
+        if (!titleDirty) $("boardTitle").value = board.title;
+        $("storageError").textContent = state.storageError;
+        const optionSignature = JSON.stringify(
+          state.leaderboard.map((p) => [p.id, p.name]),
+        );
+        if (optionsKey !== optionSignature) {
+          optionsKey = optionSignature;
+          const selected = $("quizTeam").value;
+          $("quizTeam").replaceChildren(
+            new Option("Type a new team below", ""),
+          );
+          for (const p of state.leaderboard)
+            $("quizTeam").append(new Option(p.name, p.id));
+          $("quizTeam").value = selected;
+        }
+        const signature = JSON.stringify([
+          board.teams,
+          authorized,
+          busy,
+          socket.connected,
+        ]);
+        if (tableKey === signature) return;
+        tableKey = signature;
+        $("teams").replaceChildren();
+        $("empty").hidden = board.teams.length > 0;
+        for (const team of board.teams) {
+          const tr = document.createElement("tr");
+          const td = (text, cls = "") => {
+            const c = document.createElement("td");
+            c.textContent = text;
+            c.className = cls;
+            tr.append(c);
+            return c;
+          };
+          td(
+            1 + board.teams.filter((t) => t.score > team.score).length,
+            "rank",
+          );
+          td(team.name);
+          td(team.score, "number");
+          if (authorized) {
+            const cell = document.createElement("td");
+            cell.className = "editor-controls";
+            const controls = document.createElement("div");
+            controls.className = "row-actions";
+            for (const [label, handler] of [
+              [
+                "+10",
+                () => action("custom:adjustScore", { id: team.id, delta: 10 }),
+              ],
+              [
+                "−10",
+                () => action("custom:adjustScore", { id: team.id, delta: -10 }),
+              ],
+              ["Edit", () => editTeam(team)],
+              [
+                "Remove",
+                async () => {
+                  if (confirm(`Remove ${team.name} from this custom board?`)) {
+                    if (await action("custom:removeTeam", { id: team.id })) {
+                      if (editing?.id === team.id) newTeam();
+                    }
+                  }
+                },
+              ],
+            ]) {
+              const b = document.createElement("button");
+              b.textContent = label;
+              b.setAttribute("aria-label", `${label} ${team.name}`);
+              b.disabled = busy || !socket.connected;
+              b.onclick = handler;
+              controls.append(b);
+            }
+            cell.append(controls);
+            tr.append(cell);
+          }
+          $("teams").append(tr);
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -20,6 +20,26 @@
 - A player's absence does not pause the whole game. They return to the current live question; they cannot replay questions missed while away.
 - After the last question, click **Show Final Results**. **Export Scores CSV** downloads the current standings, including offline teams and shared ranks for ties. It can also be used midgame; pending points from the active question are not included until reveal.
 
+## Big-screen leaderboard and QR controls
+
+- Click **Fullscreen Leaderboard** on the dashboard to show only the live standings across the screen. Click **Exit Fullscreen** or press **Esc** to return. If the browser cannot enter native fullscreen, the board still fills its window.
+- **Correct** counts correct submitted answers; **Wrong** counts incorrect submitted answers. **No answer** counts completed questions missed while the team was registered. These totals update after the reveal, so they do not expose the current correct answer early. They are also included in the quiz score CSV.
+- Correct answers earn **100 points plus up to 50 for speed**. Earlier correct answers get a larger speed bonus; wrong or missing answers get zero. Timing is based on when the server receives the answer. Very close answers can receive the same rounded point total.
+- Click **Hide QR Code** to hide just the QR image. The join link and player count stay visible. **Show QR Code** brings back the current QR. This view preference is remembered in that browser.
+
+## Shortlisted teams and scores you enter yourself
+
+1. After round 1, click **Custom Leaderboard** on the dashboard. It opens a separate page; there is no need to reset the quiz.
+2. Give this board a title, such as **Round 2 Finalists**, and click **Save Title**.
+3. Choose a quiz team from the dropdown, or type a new team name. Enter the starting score you want, then click **Add Team**. Repeat for the shortlisted teams. Choosing a quiz team copies its name, not its quiz points.
+4. Click **Edit** beside a team to change its name or total score, then **Save Team**. You can also use **+10** and **−10** for quick score changes. Whole-number negative totals are allowed for penalties.
+5. Click **Fullscreen Custom Board** to project only the ranked names and manual scores. Editing controls are hidden in fullscreen. Use **Esc** or **Exit Fullscreen** to return and enter more scores.
+6. Click **Export Custom Scores CSV** to save these results.
+
+All custom scores save on the laptop and survive restarting the game. They do not alter quiz points or answer totals. **Reset Game** clears the quiz roster but keeps this custom board, including teams copied from the quiz. **Clear Custom Teams** clears only manual teams and scores, after confirmation; export first. **Remove** removes one team from the custom board only.
+
+The board sorts automatically by score. Ties share a rank. Multiple authenticated host pages can view/edit the same board. If another host changes a team while you have its Edit form open, click Edit again to reload its current score before saving.
+
 ## When someone leaves and comes back
 
 ### Same phone and browser
@@ -46,7 +66,7 @@ If saving fails during play, the app rolls back the attempted action and pauses 
 
 ## Start another game
 
-First export scores you want to keep. **Reset Game / Kick All Players** clears all players, scores, histories, tokens, and recovery codes for the current game after confirmation. It keeps the title and questions, returns to the lobby, and allows editing again. Reset is deliberately a fresh start; previous recovery codes cannot enter the new game.
+First export scores you want to keep. **Reset Game / Kick All Players** clears all quiz players, quiz scores, histories, tokens, and recovery codes for the current game after confirmation. It keeps the title, questions, and independent custom leaderboard, returns to the lobby, and allows editing again. Reset is deliberately a fresh quiz start; previous recovery codes cannot enter the new game.
 
 Only one live game is hosted at a time. Completed results remain available until reset. This version has no historical-game archive; download scores before starting a new game. Knockout elimination is managed by the organizer.
 

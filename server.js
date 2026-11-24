@@ -7,6 +7,18 @@ const fs = require("node:fs"),
 const { performance } = require("node:perf_hooks");
 const { Server } = require("socket.io");
 const { createNetworkDetector } = require("./network.cjs");
+function answerCounts(history) {
+  const counts = { correct: 0, wrong: 0, unanswered: 0 };
+  for (const answer of history) {
+    if (answer.choice === null) counts.unanswered++;
+    else if (answer.choice === answer.correctAnswer) counts.correct++;
+    else counts.wrong++;
+  }
+  return counts;
+}
+function validManualScore(score) {
+  return Number.isSafeInteger(score) && Math.abs(score) <= 1000000000;
+}
 function validateQuestions(list) {
   if (!Array.isArray(list) || list.length < 1 || list.length > 100)
     throw new Error("Use 1–100 questions.");
@@ -80,6 +92,7 @@ function createGameServer(options = {}) {
     savedAt: Date.now(),
     expiresAt: null,
     players: [],
+    customLeaderboard: { title: "Shortlisted Teams", teams: [] },
   };
   function checkSave(s) {
     if (
@@ -141,6 +154,40 @@ function createGameServer(options = {}) {
       ids.add(p.id);
       names.add(p.name.toLowerCase());
       codes.add(p.recoveryCode);
+    }
+    // Older saved games gain an independent manual board without losing players.
+    if (s.customLeaderboard === undefined)
+      s.customLeaderboard = { title: "Shortlisted Teams", teams: [] };
+    const board = s.customLeaderboard;
+    if (
+      !board ||
+      typeof board.title !== "string" ||
+      !board.title.trim() ||
+      board.title.length > 80 ||
+      !Array.isArray(board.teams) ||
+      board.teams.length > 200
+    )
+      throw new Error("Invalid saved custom leaderboard.");
+    const manualIds = new Set(),
+      manualNames = new Set();
+    for (const team of board.teams) {
+      if (
+        !team ||
+        typeof team.id !== "string" ||
+        !team.id ||
+        typeof team.name !== "string" ||
+        !team.name.trim() ||
+        team.name.length > 28 ||
+        !validManualScore(team.score) ||
+        !Number.isSafeInteger(team.revision) ||
+        team.revision < 0 ||
+        !(team.sourceId === null || typeof team.sourceId === "string") ||
+        manualIds.has(team.id) ||
+        manualNames.has(team.name.toLowerCase())
+      )
+        throw new Error("Invalid saved custom team.");
+      manualIds.add(team.id);
+      manualNames.add(team.name.toLowerCase());
     }
     return s;
   }
@@ -224,6 +271,7 @@ function createGameServer(options = {}) {
         id: p.id,
         name: p.name,
         score: p.score,
+        ...answerCounts(p.history),
         answered: p.choice !== null,
         online: p.sockets.size > 0,
       }));
@@ -242,6 +290,12 @@ function createGameServer(options = {}) {
       question: q ? { question: q.question, options: q.options } : null,
       answer: ["reveal", "finished"].includes(game.phase) ? q?.answer : null,
       leaderboard,
+      customLeaderboard: {
+        title: game.customLeaderboard.title,
+        teams: [...game.customLeaderboard.teams].sort(
+          (a, b) => b.score - a.score || a.name.localeCompare(b.name),
+        ),
+      },
       storageError: storageError
         ? "Saving is unavailable. The host must resolve the storage problem before play continues."
         : "",
@@ -250,6 +304,7 @@ function createGameServer(options = {}) {
             id: me.id,
             name: me.name,
             score: me.score,
+            ...answerCounts(me.history),
             rank: 1 + leaderboard.filter((p) => p.score > me.score).length,
             choice: me.choice,
             recoveryCode: me.recoveryCode,
@@ -342,6 +397,108 @@ function createGameServer(options = {}) {
     socket.on("host:auth", (key, ack) => {
       socket.data.host = typeof key === "string" && key === hostKey;
       reply(ack, { ok: socket.data.host });
+    });
+    const customAction = (event, prepare) =>
+      socket.on(event, (data, ack) => {
+        if (!socket.data.host)
+          return reply(ack, { error: "Host authentication required." });
+        try {
+          const change = prepare(data);
+          saved(ack, commit(change));
+          broadcast();
+        } catch (error) {
+          reply(ack, { error: error.message });
+        }
+      });
+    const customTeam = (id) => {
+      const team = game.customLeaderboard.teams.find((t) => t.id === id);
+      if (!team)
+        throw new Error("Team not found. Refresh the board and try again.");
+      return team;
+    };
+    const manualName = (value, exceptId = null) => {
+      const name =
+        typeof value === "string" ? value.trim().replace(/\s+/g, " ") : "";
+      if (!name || name.length > 28)
+        throw new Error("Use a team name of 1–28 characters.");
+      if (
+        game.customLeaderboard.teams.some(
+          (t) =>
+            t.id !== exceptId && t.name.toLowerCase() === name.toLowerCase(),
+        )
+      )
+        throw new Error("That team name is already on the custom board.");
+      return name;
+    };
+    customAction("custom:rename", (data) => {
+      const title = typeof data?.title === "string" ? data.title.trim() : "";
+      if (!title || title.length > 80)
+        throw new Error("Use a board title of 1–80 characters.");
+      return () => {
+        game.customLeaderboard.title = title;
+      };
+    });
+    customAction("custom:addTeam", (data) => {
+      if (game.customLeaderboard.teams.length >= 200)
+        throw new Error("This board is full (200 teams).");
+      const name = manualName(data?.name);
+      if (!validManualScore(data?.score))
+        throw new Error(
+          "Enter a whole-number score between -1,000,000,000 and 1,000,000,000.",
+        );
+      const sourceId = data.sourceId || null;
+      if (sourceId && ![...players.values()].some((p) => p.id === sourceId))
+        throw new Error(
+          "That quiz team is no longer available. Type the name instead.",
+        );
+      const team = {
+        id: crypto.randomUUID(),
+        name,
+        score: data.score,
+        sourceId,
+        revision: 0,
+      };
+      return () => {
+        game.customLeaderboard.teams.push(team);
+      };
+    });
+    customAction("custom:updateTeam", (data) => {
+      const team = customTeam(data?.id),
+        name = manualName(data?.name, team.id);
+      if (!validManualScore(data?.score))
+        throw new Error("Enter a valid whole-number score.");
+      if (data.revision !== team.revision)
+        throw new Error(
+          "This team changed while you were editing. Click Edit again to load its latest score.",
+        );
+      return () => {
+        team.name = name;
+        team.score = data.score;
+        team.revision++;
+      };
+    });
+    customAction("custom:adjustScore", (data) => {
+      const team = customTeam(data?.id);
+      if (
+        !Number.isSafeInteger(data.delta) ||
+        !validManualScore(team.score + data.delta)
+      )
+        throw new Error("Enter a valid score adjustment.");
+      return () => {
+        team.score += data.delta;
+        team.revision++;
+      };
+    });
+    customAction("custom:removeTeam", (data) => {
+      const team = customTeam(data?.id);
+      return () => {
+        game.customLeaderboard.teams = game.customLeaderboard.teams.filter(
+          (t) => t.id !== team.id,
+        );
+      };
+    });
+    customAction("custom:clear", () => () => {
+      game.customLeaderboard.teams = [];
     });
     socket.on("host:setup", (_, ack) => {
       if (!socket.data.host)
