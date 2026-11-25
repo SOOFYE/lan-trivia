@@ -70,6 +70,21 @@ First export scores you want to keep. **Reset Game / Kick All Players** clears a
 
 Only one live game is hosted at a time. Completed results remain available until reset. This version has no historical-game archive; download scores before starting a new game. Knockout elimination is managed by the organizer.
 
+## Undo a reset, clear, or mistaken edit
+
+Open **Backups / Restore** on the host dashboard. The app automatically saves a private recovery snapshot before quiz reset, custom clear/removal/manual team edit, and quiz setup replacement. It also saves before upgrading an untouched demo question pack. If that required backup cannot be written, the change is cancelled.
+
+1. Choose the recovery copy from before the mistake.
+2. Choose **Custom leaderboard only**, **Quiz and players only**, or **Entire saved game**. Restoring custom scores alone leaves current quiz progress intact; restoring the quiz alone keeps current custom scores.
+3. Type **RESTORE**, click **Restore Selected Backup**, and confirm.
+4. Return to the dashboard. Restored active questions are paused. Resume when ready. Players not present in that snapshot may need to join again; original players can use their saved token or recovery code.
+
+A restore first saves the current game too, so it can itself be undone. Quiz restores return to that point in time; scores earned after it are replaced for the selected part. The page lists the latest 100 snapshots; older snapshot files stay on disk. No automatic deletion/pruning is performed, so check free disk space before an event.
+
+Use **Create Backup Now**, then **Download Selected Backup**, for a private copy outside the laptop. It contains player tokens and recovery details; do not share or commit it publicly. A download is a raw game-state JSON file, not a question-import file.
+
+For recovery onto a replacement copy: stop that app, keep a separate copy of its current `data` folder, copy the downloaded game-state JSON into `data`, name it `game-state.json`, and start the app. Use the host key printed by that copy; the downloaded game-state file does not replace its host key. Keep the original backup unchanged. If unsure, ask for help before replacing files.
+
 ## Back up or move your game
 
 The private `data/` directory contains:
@@ -79,11 +94,15 @@ data/
   game-state.json       Current saved game, including private player tokens/codes
   game-state.json.bak   Previous valid snapshot
   host-key.txt          Persistent host control key
+  backups/              Recovery snapshots before destructive changes
+  server.lock           Prevents two app copies writing the same game folder
 ```
 
 Stop the server before copying this directory, then keep the copy private. To move to another laptop, copy the app (with installed dependencies) and this directory, install Node.js, and start it. Players can use their recovery codes if the join URL changes. Do not run both copies as separate live servers and expect them to synchronize.
 
-If the primary save is unreadable, the app tries the previous valid snapshot and prints a recovery warning. That backup may be one change behind. If neither file is valid, startup stops without overwriting them; restore your backup. A power failure or disk failure still makes external backups worthwhile.
+If the primary save is unreadable, the app tries the previous valid snapshot and prints a recovery warning. It preserves the unreadable file inside `data/backups/` before replacing the primary. The fallback may be one change behind. If neither file is valid, startup stops without overwriting them; restore your backup. A power failure or disk failure still makes external backups essential.
+
+Only one process may use a saved-game folder at a time. If another copy is running, the app refuses startup before modifying the saved game. A stale lock left by a stopped process is recovered automatically. If a lock is unreadable or recovery is already in progress, startup stops rather than guessing; keep `data/` intact and ask for help. Never remove a lock to run two copies on the same folder.
 
 The supplied source and offline-ready ZIPs exclude this private directory, so sharing a download does not share your host key or player identities. The server serves only `public/`; files in `data/` are not downloadable through the web app.
 

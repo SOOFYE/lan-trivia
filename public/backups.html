@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>LAN Trivia · Backups</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: system-ui, sans-serif;
+        background: #101523;
+        color: #f4f6fc;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      main {
+        max-width: 950px;
+        margin: auto;
+        padding: 28px 20px;
+      }
+      a {
+        color: #b6f568;
+      }
+      h1 {
+        font-size: 36px;
+      }
+      .panel {
+        background: #192135;
+        border: 1px solid #35415a;
+        border-radius: 18px;
+        padding: 24px;
+        margin: 24px 0;
+      }
+      p {
+        line-height: 1.6;
+        color: #bdcae0;
+      }
+      label {
+        display: block;
+        margin: 18px 0 8px;
+        font-weight: 650;
+      }
+      input,
+      select,
+      button {
+        font: inherit;
+        border-radius: 10px;
+        padding: 14px;
+        min-height: 50px;
+      }
+      input,
+      select {
+        width: 100%;
+        border: 1px solid #56647d;
+        background: #101523;
+        color: white;
+      }
+      button {
+        border: 1px solid #56647d;
+        background: #29374f;
+        color: white;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      button.primary {
+        background: #b6f568;
+        color: #172315;
+      }
+      button:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+      .tools {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+      }
+      #message {
+        color: #c8f79a;
+        min-height: 28px;
+      }
+      button:focus-visible,
+      input:focus-visible,
+      select:focus-visible {
+        outline: 3px solid #b6f568;
+        outline-offset: 3px;
+      }
+      [hidden] {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <a href="/host.html">Back to dashboard</a>
+      <h1>Backups / Restore</h1>
+      <p>
+        Before a reset, clear, removal, quiz replacement, or manual team edit,
+        the game saves a recovery copy. Restoring also backs up the current game
+        first. Recovery changes saved game data; it does not delete other files
+        on your computer.
+      </p>
+      <p id="message" role="status">Connecting…</p>
+      <section id="authPanel" class="panel">
+        <form id="authForm">
+          <label for="key">Host key from the game window</label
+          ><input id="key" type="password" autocomplete="off" required />
+          <div class="tools">
+            <button class="primary">Unlock Backups</button>
+          </div>
+        </form>
+      </section>
+      <section id="workspace" hidden>
+        <div class="panel">
+          <h2>Save a copy now</h2>
+          <p>
+            Automatic backups stay on this laptop. Download a copy to another
+            device or USB drive for protection against a lost laptop or failed
+            disk. Downloads contain private player recovery details; keep them
+            private.
+          </p>
+          <div class="tools">
+            <button id="backupNow" class="primary">Create Backup Now</button
+            ><button id="refresh">Refresh List</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Choose a recovery copy</h2>
+          <label for="backup">Saved backup (latest 100 shown)</label
+          ><select id="backup"></select>
+          <p id="details"></p>
+          <div class="tools">
+            <button id="download">Download Selected Backup</button>
+          </div>
+          <label for="mode">What do you want to restore?</label
+          ><select id="mode">
+            <option value="custom">
+              Custom leaderboard only — keep current quiz progress
+            </option>
+            <option value="quiz">
+              Quiz and players only — keep current custom scores
+            </option>
+            <option value="all">
+              Entire saved game — quiz, players, and custom scores
+            </option>
+          </select>
+          <p>
+            Quiz restores return to the selected point in time. An active
+            question comes back paused. Players not present in that copy may
+            need to join again. You can undo a restore using the “Before backup
+            restore” copy.
+          </p>
+          <label for="confirmation">Type RESTORE to enable the button</label
+          ><input id="confirmation" autocomplete="off" spellcheck="false" />
+          <div class="tools">
+            <button id="restore" disabled>Restore Selected Backup</button>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      "use strict";
+      const $ = (id) => document.getElementById(id),
+        socket = io();
+      let authorized = false,
+        busy = false,
+        list = [],
+        key = location.hash.slice(1);
+      if (key) {
+        try {
+          localStorage.setItem("triviaHostKey", key);
+        } catch {}
+        history.replaceState(null, "", location.pathname);
+      } else {
+        try {
+          key = localStorage.getItem("triviaHostKey") || "";
+        } catch {}
+      }
+      const request = (event, data = null) =>
+        new Promise((resolve, reject) =>
+          socket
+            .timeout(15000)
+            .emit(event, data, (error, result) =>
+              error
+                ? reject(
+                    new Error(
+                      "Connection interrupted. Check the saved game before retrying.",
+                    ),
+                  )
+                : result.error
+                  ? reject(new Error(result.error))
+                  : resolve(result),
+            ),
+        );
+      function render() {
+        $("authPanel").hidden = authorized;
+        $("workspace").hidden = !authorized;
+        for (const element of document.querySelectorAll(
+          "#workspace button,#workspace select,#workspace input",
+        ))
+          element.disabled = busy || !socket.connected;
+        $("restore").disabled =
+          busy ||
+          !authorized ||
+          !socket.connected ||
+          !$("backup").value ||
+          $("confirmation").value !== "RESTORE";
+        $("download").disabled =
+          busy || !socket.connected || !$("backup").value;
+      }
+      async function refresh(selected) {
+        const data = await request("host:backups");
+        list = data.backups;
+        const old = selected || $("backup").value;
+        $("backup").replaceChildren();
+        for (const b of list) {
+          const o = document.createElement("option");
+          o.value = b.id;
+          o.textContent = `${new Date(b.createdAt).toLocaleString()} · ${b.reason}`;
+          $("backup").append(o);
+        }
+        if (list.some((b) => b.id === old)) $("backup").value = old;
+        details();
+        render();
+      }
+      function details() {
+        const b = list.find((b) => b.id === $("backup").value);
+        $("details").textContent = b
+          ? `${b.title} · ${b.players} quiz teams · ${b.customTeams} custom teams · ${b.phase}`
+          : "No backups yet. Create one above.";
+      }
+      async function auth(value) {
+        try {
+          authorized = (await request("host:auth", value)).ok;
+          if (!authorized)
+            throw new Error("Use the current host key from the game window.");
+          key = value;
+          try {
+            localStorage.setItem("triviaHostKey", value);
+          } catch {}
+          $("key").value = "";
+          await refresh();
+          $("message").textContent = "Backups unlocked.";
+        } catch (e) {
+          $("message").textContent = e.message;
+        }
+        render();
+      }
+      async function operation(fn) {
+        if (!authorized || busy) return;
+        busy = true;
+        render();
+        try {
+          await fn();
+        } catch (e) {
+          $("message").textContent = e.message;
+        } finally {
+          busy = false;
+          render();
+        }
+      }
+      socket.on("connect", () => {
+        if (key) auth(key);
+        else
+          $("message").textContent =
+            "Enter the host key to manage recovery copies.";
+        render();
+      });
+      socket.on("disconnect", () => {
+        authorized = false;
+        $("message").textContent = "Disconnected. Reconnecting…";
+        render();
+      });
+      socket.on("connect_error", () => {
+        $("message").textContent = "Server unavailable. Reconnecting…";
+      });
+      $("authForm").onsubmit = (e) => {
+        e.preventDefault();
+        auth($("key").value.trim());
+      };
+      $("backup").onchange = () => {
+        details();
+        render();
+      };
+      $("confirmation").oninput = render;
+      $("refresh").onclick = () => operation(() => refresh());
+      $("backupNow").onclick = () =>
+        operation(async () => {
+          const data = await request("host:backupNow");
+          await refresh(data.id);
+          $("message").textContent =
+            "Backup saved. Download it for a copy outside this laptop.";
+        });
+      $("download").onclick = () =>
+        operation(async () => {
+          const data = await request("host:downloadBackup", {
+            id: $("backup").value,
+          });
+          const url = URL.createObjectURL(
+              new Blob([JSON.stringify(data.backup.game, null, 2)], {
+                type: "application/json",
+              }),
+            ),
+            a = document.createElement("a");
+          a.href = url;
+          a.download = `game-state-backup-${$("backup").value}.json`;
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          $("message").textContent =
+            "Private backup downloaded. Keep it somewhere safe.";
+        });
+      $("restore").onclick = () => {
+        if (
+          !confirm(
+            "Restore the selected backup for the chosen part of the game? Current progress for that part will be replaced. A recovery copy of the current game is saved first.",
+          )
+        )
+          return;
+        operation(async () => {
+          await request("host:restoreBackup", {
+            id: $("backup").value,
+            mode: $("mode").value,
+            confirm: $("confirmation").value,
+          });
+          $("confirmation").value = "";
+          await refresh();
+          $("message").textContent =
+            "Restored. Return to the dashboard; resume the question if it is paused.";
+        });
+      };
+    </script>
+  </body>
+</html>

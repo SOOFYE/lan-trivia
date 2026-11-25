@@ -7,6 +7,7 @@ const fs = require("node:fs"),
 const { performance } = require("node:perf_hooks");
 const { Server } = require("socket.io");
 const { createNetworkDetector } = require("./network.cjs");
+const { writeDurable, lockDataDirectory, archives } = require("./storage.cjs");
 function answerCounts(history) {
   const counts = { correct: 0, wrong: 0, unanswered: 0 };
   for (const answer of history) {
@@ -52,6 +53,17 @@ function validateQuestions(list) {
   });
 }
 function createGameServer(options = {}) {
+  const dataDir = path.resolve(options.dataDir || path.join(__dirname, "data"));
+  fs.mkdirSync(dataDir, { recursive: true });
+  const releaseLock = lockDataDirectory(dataDir);
+  try {
+    return startGameServer(options, dataDir, releaseLock);
+  } catch (error) {
+    releaseLock();
+    throw error;
+  }
+}
+function startGameServer(options, dataDir, releaseLock) {
   const detectNetwork = options.detectNetwork || createNetworkDetector();
   const ip = process.env.LAN_IP || "127.0.0.1",
     port = options.port ?? 3000;
@@ -60,15 +72,11 @@ function createGameServer(options = {}) {
     ip.split(".").some((n) => +n > 255)
   )
     throw new Error("LAN_IP must be an IPv4 address.");
-  const dataDir = options.dataDir || path.join(__dirname, "data");
-  fs.mkdirSync(dataDir, { recursive: true });
+  const backups = archives(dataDir);
   const savePath = path.join(dataDir, "game-state.json"),
     keyPath = path.join(dataDir, "host-key.txt");
   if (!fs.existsSync(keyPath))
-    fs.writeFileSync(keyPath, crypto.randomBytes(18).toString("hex"), {
-      flag: "wx",
-      mode: 0o600,
-    });
+    writeDurable(keyPath, crypto.randomBytes(18).toString("hex"), "wx");
   const hostKey = fs.readFileSync(keyPath, "utf8").trim();
   if (!/^[a-f0-9]{36}$/.test(hostKey))
     throw new Error(
@@ -144,12 +152,39 @@ function createGameServer(options = {}) {
           (Number.isInteger(p.choice) && p.choice >= 0 && p.choice <= 3)
         ) ||
         !Array.isArray(p.history) ||
+        p.history.length > 100 ||
         tokens.has(p.token) ||
         ids.has(p.id) ||
         names.has(p.name.toLowerCase()) ||
         codes.has(p.recoveryCode)
       )
         throw new Error("Invalid saved player record.");
+      const rounds = new Set();
+      for (const h of p.history) {
+        if (
+          !h ||
+          !Number.isInteger(h.index) ||
+          h.index < 0 ||
+          h.index >= s.questions.length ||
+          rounds.has(h.index) ||
+          typeof h.question !== "string" ||
+          !Array.isArray(h.options) ||
+          h.options.length !== 4 ||
+          h.options.some((o) => typeof o !== "string") ||
+          !(
+            h.choice === null ||
+            (Number.isInteger(h.choice) && h.choice >= 0 && h.choice < 4)
+          ) ||
+          !Number.isInteger(h.correctAnswer) ||
+          h.correctAnswer < 0 ||
+          h.correctAnswer > 3 ||
+          !Number.isInteger(h.earned) ||
+          h.earned < 0 ||
+          h.earned > 150
+        )
+          throw new Error("Invalid saved answer history.");
+        rounds.add(h.index);
+      }
       tokens.add(p.token);
       ids.add(p.id);
       names.add(p.name.toLowerCase());
@@ -191,6 +226,7 @@ function createGameServer(options = {}) {
     }
     return s;
   }
+  const damagedCopies = [];
   if (fs.existsSync(savePath) || fs.existsSync(savePath + ".bak")) {
     let loaded = false;
     for (const file of [savePath, savePath + ".bak"]) {
@@ -201,6 +237,11 @@ function createGameServer(options = {}) {
           console.warn("Recovered previous snapshot from backup.");
         break;
       } catch (e) {
+        if (fs.existsSync(file))
+          damagedCopies.push({
+            name: path.basename(file),
+            content: fs.readFileSync(file, "utf8"),
+          });
         console.warn(`Cannot read ${path.basename(file)}: ${e.message}`);
       }
     }
@@ -209,6 +250,19 @@ function createGameServer(options = {}) {
         "Saved game and backup could not be read. Restore data/ from backup; files were not overwritten.",
       );
   }
+  for (const damaged of damagedCopies) {
+    const folder = path.join(dataDir, "backups");
+    fs.mkdirSync(folder, { recursive: true });
+    writeDurable(
+      path.join(
+        folder,
+        `unreadable-${Date.now()}-${crypto.randomUUID()}-${damaged.name}`,
+      ),
+      damaged.content,
+      "wx",
+    );
+  }
+  let migrationBackup = null;
   // Upgrade untouched five-question demo lobbies to the supplied event pack.
   // Active rounds and host-authored quizzes keep their saved questions.
   if (
@@ -225,6 +279,7 @@ function createGameServer(options = {}) {
       savedPackHash ===
       "cebd3d54b1b1dbfbafc74ed8a9577924e9ac20985183f1f7283474a2f5697a0a"
     ) {
+      migrationBackup = structuredClone(game);
       game.questions = validateQuestions(
         JSON.parse(
           fs.readFileSync(path.join(__dirname, "questions.json"), "utf8"),
@@ -265,7 +320,8 @@ function createGameServer(options = {}) {
     };
   }
   function persist() {
-    const content = JSON.stringify(snapshot(), null, 2);
+    const next = checkSave(snapshot());
+    const content = JSON.stringify(next, null, 2);
     if (fs.existsSync(savePath)) {
       const old = fs.readFileSync(savePath, "utf8");
       let valid = false;
@@ -274,7 +330,7 @@ function createGameServer(options = {}) {
         valid = true;
       } catch {}
       if (valid) {
-        fs.writeFileSync(savePath + ".bak.tmp", old, { mode: 0o600 });
+        writeDurable(savePath + ".bak.tmp", old);
         fs.renameSync(savePath + ".bak.tmp", savePath + ".bak");
       }
     }
@@ -398,7 +454,6 @@ function createGameServer(options = {}) {
     }
     return true;
   }
-  persist();
   const ticker = setInterval(() => {
     if (game.phase !== "question") return;
     if (!expire()) return;
@@ -430,6 +485,12 @@ function createGameServer(options = {}) {
           return reply(ack, { error: "Host authentication required." });
         try {
           const change = prepare(data);
+          if (
+            ["custom:clear", "custom:removeTeam", "custom:updateTeam"].includes(
+              event,
+            )
+          )
+            backups.save(`Before ${event}`, snapshot());
           saved(ack, commit(change));
           broadcast();
         } catch (error) {
@@ -541,6 +602,73 @@ function createGameServer(options = {}) {
         })),
       });
     });
+    socket.on("host:backups", (_, ack) => {
+      if (!socket.data.host)
+        return reply(ack, { error: "Host authentication required." });
+      try {
+        reply(ack, { ok: true, backups: backups.list() });
+      } catch (error) {
+        reply(ack, { error: error.message });
+      }
+    });
+    socket.on("host:backupNow", (_, ack) => {
+      if (!socket.data.host)
+        return reply(ack, { error: "Host authentication required." });
+      try {
+        const id = backups.save("Manual backup", snapshot());
+        reply(ack, { ok: true, id });
+      } catch (error) {
+        reply(ack, { error: "Backup could not be saved: " + error.message });
+      }
+    });
+    socket.on("host:downloadBackup", (data, ack) => {
+      if (!socket.data.host)
+        return reply(ack, { error: "Host authentication required." });
+      try {
+        reply(ack, { ok: true, backup: backups.read(data?.id) });
+      } catch (error) {
+        reply(ack, { error: error.message });
+      }
+    });
+    socket.on("host:restoreBackup", (data, ack) => {
+      if (!socket.data.host)
+        return reply(ack, { error: "Host authentication required." });
+      try {
+        if (
+          data?.confirm !== "RESTORE" ||
+          !["all", "quiz", "custom"].includes(data.mode)
+        )
+          throw new Error("Choose what to restore and confirm the restore.");
+        const restored = checkSave(structuredClone(backups.read(data.id).game));
+        backups.save("Before backup restore", snapshot());
+        const ok = commit(() => {
+          if (data.mode === "custom") {
+            game.customLeaderboard = restored.customLeaderboard;
+            return;
+          }
+          const manual = game.customLeaderboard,
+            connections = new Map(
+              [...players].map(([token, p]) => [token, p.sockets]),
+            );
+          game = restored;
+          if (data.mode === "quiz") game.customLeaderboard = manual;
+          if (game.phase === "question") {
+            game.pausedMs = Math.max(0, game.expiresAt - game.savedAt);
+            game.phase = "paused";
+          }
+          players = new Map(
+            game.players.map((p) => [
+              p.token,
+              { ...p, sockets: connections.get(p.token) || new Set() },
+            ]),
+          );
+        });
+        saved(ack, ok);
+        broadcast();
+      } catch (error) {
+        reply(ack, { error: error.message });
+      }
+    });
     socket.on("host:saveSetup", (data, ack) => {
       if (!socket.data.host)
         return reply(ack, { error: "Host authentication required." });
@@ -560,6 +688,7 @@ function createGameServer(options = {}) {
             "Enter a title (1–80 characters) and joining preference.",
           );
         const questions = validateQuestions(data.questions);
+        backups.save("Before quiz setup change", snapshot());
         const ok = commit(() => {
           game.title = data.title.trim();
           game.allowLateJoin = data.allowLateJoin;
@@ -616,6 +745,15 @@ function createGameServer(options = {}) {
     socket.on("host:reset", (_, ack) => {
       if (!socket.data.host)
         return reply(ack, { error: "Host authentication required." });
+      try {
+        backups.save("Before quiz reset", snapshot());
+      } catch (error) {
+        return reply(ack, {
+          error:
+            "Reset cancelled because a recovery backup could not be saved: " +
+            error.message,
+        });
+      }
       const ok = commit(() => {
         players.clear();
         game.phase = "lobby";
@@ -773,8 +911,27 @@ function createGameServer(options = {}) {
     options.networkIntervalMs || 2000,
   );
   const ready = new Promise((resolve, reject) => {
-    server.once("error", reject);
+    server.once("error", (error) => {
+      clearInterval(ticker);
+      clearInterval(networkTicker);
+      releaseLock();
+      reject(error);
+    });
     server.listen(port, "0.0.0.0", async () => {
+      // Do not rewrite a save if another/older copy already occupies this port.
+      try {
+        if (migrationBackup)
+          backups.save("Before included question pack update", migrationBackup);
+        persist();
+      } catch (error) {
+        clearInterval(ticker);
+        clearInterval(networkTicker);
+        io.close(() => {
+          releaseLock();
+          reject(error);
+        });
+        return;
+      }
       joinURL = `http://${ip}:${server.address().port}/`;
       const detected = await refreshNetwork();
       console.log(
@@ -809,7 +966,11 @@ function createGameServer(options = {}) {
         game.pausedMs = millis();
         game.phase = "paused";
       });
-    await new Promise((resolve) => io.close(resolve));
+    try {
+      await new Promise((resolve) => io.close(resolve));
+    } finally {
+      releaseLock();
+    }
   }
   return { server, io, ready, close, hostKey };
 }

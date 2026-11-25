@@ -388,6 +388,14 @@
             rel="noopener"
             >Custom Leaderboard</a
           >
+          <a
+            id="backupsLink"
+            class="utility"
+            href="/backups.html"
+            target="_blank"
+            rel="noopener"
+            >Backups / Restore</a
+          >
         </div>
         <p id="notice" role="status"></p>
         <p id="storageError" role="alert"></p>
@@ -683,6 +691,7 @@
         $("hostTools").hidden = !authorized;
         $("setupLink").href = `/setup.html#${encodeURIComponent(hostKey)}`;
         $("customLink").href = `/custom.html#${encodeURIComponent(hostKey)}`;
+        $("backupsLink").href = `/backups.html#${encodeURIComponent(hostKey)}`;
         $("qr").hidden = qrHidden;
         $("toggleQR").textContent = qrHidden ? "Show QR Code" : "Hide QR Code";
         $("toggleQR").setAttribute("aria-pressed", String(qrHidden));

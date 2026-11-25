@@ -202,7 +202,7 @@ Reference documentation: [Socket.io server options](https://socket.io/docs/v4/se
 
 ## Internal endpoints for developers
 
-People running the game only need the four pages listed in the README. These are all application page and connection endpoints; there is no separate REST API:
+People running the game only need the five pages listed in the README. These are all application page and connection endpoints; there is no separate REST API:
 
 | Path | Purpose |
 | --- | --- |
@@ -211,6 +211,7 @@ People running the game only need the four pages listed in the README. These are
 | `/host.html` | Host dashboard and projector page. Host key required for controls. |
 | `/setup.html` | Private quiz editor and player recovery workspace. Host key required for data/actions. |
 | `/custom.html` | Independent manual leaderboard for shortlisted teams. Host key required to edit; supports fullscreen display. |
+| `/backups.html` | Host-only backup listing, creation, download, and scoped restore controls. |
 | `/presentation.js`, `/presentation.css` | Local fullscreen/fallback controls and styling for both leaderboards. |
 | `/socket.io/socket.io.js` | Local Socket.io browser client; loaded automatically by the pages. |
 | `/socket.io/` | Socket.io / Engine.IO connection path for polling and WebSocket traffic. Not a page to open manually. |
@@ -218,3 +219,5 @@ People running the game only need the four pages listed in the README. These are
 The server also serves static assets from `public/`. Private saved games in `data/` and the root-level `questions.json` are not served as static files.
 
 Client-to-server Socket.io events are `host:auth`, `host:setup`, `host:saveSetup`, `host:next`, `host:pause`, `host:reset`, `join`, `answer`, `sync`, `custom:rename`, `custom:addTeam`, `custom:updateTeam`, `custom:adjustScore`, `custom:removeTeam`, and `custom:clear`. The server sends `state` updates and `kicked` notifications; `disconnect` is a built-in connection event. All host and custom-edit actions check authentication on the server. Custom teams are persisted in `game-state.json` separately from player records. Existing version-2 saves without a custom board are migrated automatically without losing quiz progress.
+
+Recovery events are `host:backups`, `host:backupNow`, `host:downloadBackup`, and `host:restoreBackup`; every one requires server-side host authentication. Restore identifiers are restricted to local backup filenames, not arbitrary paths. Restores require an explicit mode and confirmation value, validate the saved state, and back up current state before committing. The app writes only within its configured data directory during gameplay; it does not format drives, recursively delete folders, or change firewall settings. Backups are not automatically deleted. This is a trusted-LAN app, not a hardened internet-facing service. No software can guarantee protection against hardware failure, a user deleting the app's data folder, or a compromised computer; maintain a separate private backup.

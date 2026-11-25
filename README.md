@@ -39,6 +39,7 @@ Open these **on the laptop**, after starting the game:
 | Host dashboard / projector | [http://localhost:3000/host.html](http://localhost:3000/host.html) |
 | Edit questions / game setup | [http://localhost:3000/setup.html](http://localhost:3000/setup.html) |
 | Shortlisted teams / manual scores | [http://localhost:3000/custom.html](http://localhost:3000/custom.html) |
+| Recover a reset or cleared board | [http://localhost:3000/backups.html](http://localhost:3000/backups.html) |
 | Player screen | [http://localhost:3000/](http://localhost:3000/) — `/index.html` opens the same page |
 
 **On phones:** scan the QR or use the **Players** link printed in the black window. **Do not use `localhost` on a phone.** Connect to Wi-Fi before scanning; the game QR does not connect Wi-Fi for you.
@@ -46,5 +47,7 @@ Open these **on the laptop**, after starting the game:
 **Changed networks?** The link and QR update automatically. Connect phones to the new Wi-Fi and scan again. Use a recovery code if asked to restore your team.
 
 **Stop:** press **Ctrl+C** in the black window. Reopen **START-GAME.cmd** later to continue saved progress. **Reset Game** clears players and scores; export scores first.
+
+**Recovery:** use **Backups / Restore** to undo a reset, clear, or mistaken edit. Download a private backup to a USB drive or another device too—copies on the same laptop cannot protect against a failed disk or lost laptop.
 
 [Phone won't connect?](HELP.md#if-a-phone-cannot-open-the-game) · [Player recovery and host guide](HOST-GUIDE.md) · [Technical details and internal endpoints](HELP.md#internal-endpoints-for-developers)

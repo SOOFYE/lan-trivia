@@ -4,3 +4,6 @@ data/
 .env.*
 *.log
 coverage/
+game-state*.json
+host-key*.txt
+server.lock*
