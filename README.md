@@ -9,6 +9,8 @@ Host a quiz on your laptop. Players answer on their phones. **No internet needed
 
 Do this while you have internet. Phones do not need anything installed.
 
+**Included quiz:** 25 Pakistan General Knowledge questions from the organizer's Round 1 pack, with **20 seconds per question**. If an existing saved quiz is selected, use **Game Setup → Import JSON → round-1-quiz.json → Save Game Setup** before starting. Untouched demo lobbies update automatically.
+
 ## Start a game
 
 1. **Connect everyone:** laptop and phones must use the same router. The laptop can use an Ethernet cable. No router? See **Laptop hotspot** below.

@@ -97,7 +97,7 @@ For a small group, a supported laptop hotspot may be enough. For a large hall, u
 1. In the game window, find **Host (private)**. Copy that entire link and paste it into a browser on the laptop. The link contains your private host key; do not share it with players.
 2. Click **Game Setup**. This opens the host's editing workspace. Keep that tab off the projector because it contains correct answers and recovery codes.
 3. Set the game title. Edit the questions and four choices, select each correct answer, and set the time allowed.
-4. You can add/remove/reorder questions, or import a quiz JSON file. Five starter questions are included.
+4. You can add/remove/reorder questions, or import a quiz JSON file. The included Round 1 pack has 25 Pakistan General Knowledge questions with 20-second timers. Use `round-1-quiz.json` to import the complete titled quiz into an existing lobby. Active games and host-authored saved quizzes are not overwritten; finish/reset the quiz before importing. Untouched five-question demo lobbies upgrade automatically on restart.
 5. Click **Save Game Setup**, then go back to the dashboard.
 6. Put the dashboard on the projector. Players scan its QR code after connecting to the correct Wi-Fi, enter their names, and join.
 7. Click **Start Game**. When the timer reaches zero, answers are revealed and points are awarded. Click **Next Question** when ready.

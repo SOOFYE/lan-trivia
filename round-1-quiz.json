@@ -1,0 +1,186 @@
+{
+  "title": "Round 1 · Pakistan General Knowledge",
+  "allowLateJoin": true,
+  "questions": [
+    {
+      "question": "Which city of Pakistan is known as the City of Gardens?",
+      "options": ["Islamabad", "Lahore", "Multan", "Karachi"],
+      "answer": 1,
+      "time": 20
+    },
+    {
+      "question": "What is the national flower of Pakistan?",
+      "options": ["Rose", "Sunflower", "Jasmine", "Tulip"],
+      "answer": 2,
+      "time": 20
+    },
+    {
+      "question": "Which province is traditionally associated with Ajrak?",
+      "options": ["Punjab", "Sindh", "Balochistan", "Khyber Pakhtunkhwa"],
+      "answer": 1,
+      "time": 20
+    },
+    {
+      "question": "Who wrote the lyrics of Pakistan's national anthem?",
+      "options": [
+        "Allama Iqbal",
+        "Faiz Ahmed Faiz",
+        "Hafeez Jalandhari",
+        "Ahmed Faraz"
+      ],
+      "answer": 2,
+      "time": 20
+    },
+    {
+      "question": "Which Pakistani city is famous for its blue pottery?",
+      "options": ["Quetta", "Multan", "Sialkot", "Hyderabad"],
+      "answer": 1,
+      "time": 20
+    },
+    {
+      "question": "Which is the largest province of Pakistan by area?",
+      "options": ["Sindh", "Punjab", "Balochistan", "Khyber Pakhtunkhwa"],
+      "answer": 2,
+      "time": 20
+    },
+    {
+      "question": "In which year did Pakistan win its first T20i Cricket World Cup?",
+      "options": ["1987", "1992", "2007", "2009"],
+      "answer": 3,
+      "time": 20
+    },
+    {
+      "question": "Which Pakistani city is particularly famous for Chapli Kebab?",
+      "options": ["Peshawar", "Karachi", "Lahore", "Sukkur"],
+      "answer": 0,
+      "time": 20
+    },
+    {
+      "question": "What is the national animal of Pakistan?",
+      "options": ["Snow Leopard", "Lion", "Markhor", "Chinkara"],
+      "answer": 2,
+      "time": 20
+    },
+    {
+      "question": "Which city was the first capital of Pakistan?",
+      "options": ["Lahore", "Rawalpindi", "Islamabad", "Karachi"],
+      "answer": 3,
+      "time": 20
+    },
+    {
+      "question": "Which Pakistani singer was popularly known as Malika-e-Tarannum?",
+      "options": [
+        "Nazia Hassan",
+        "Noor Jehan",
+        "Abida Parveen",
+        "Hadiqa Kiani"
+      ],
+      "answer": 1,
+      "time": 20
+    },
+    {
+      "question": "What does the word Punjab literally mean?",
+      "options": [
+        "Land of Five Rivers",
+        "Land of Five Mountains",
+        "Land of Five Cities",
+        "Land of Five Deserts"
+      ],
+      "answer": 0,
+      "time": 20
+    },
+    {
+      "question": "Which Pakistani city is internationally famous for manufacturing sports goods?",
+      "options": ["Faisalabad", "Sialkot", "Gujranwala", "Lahore"],
+      "answer": 1,
+      "time": 20
+    },
+    {
+      "question": "What is the approximate height of K2 above sea level?",
+      "options": ["8,211", "8,611", "8,311", "7,911"],
+      "answer": 1,
+      "time": 20
+    },
+    {
+      "question": "Which Pakistani scientist won the Nobel Prize in Physics?",
+      "options": [
+        "Dr. Abdul Qadeer Khan",
+        "Dr. Abdus Salam",
+        "Dr. Samar Mubarakmand",
+        "Dr. Atta-ur-Rahman"
+      ],
+      "answer": 1,
+      "time": 20
+    },
+    {
+      "question": "Which traditional footwear is particularly associated with Peshawar?",
+      "options": ["Khussa", "Peshawari Chappal", "Kolhapuri Chappal", "Mojari"],
+      "answer": 1,
+      "time": 20
+    },
+    {
+      "question": "Which river is also known as Darya-e-Sindh?",
+      "options": ["Ravi", "Chenab", "Jhelum", "Indus"],
+      "answer": 3,
+      "time": 20
+    },
+    {
+      "question": "In which city is Faisal Mosque located?",
+      "options": ["Karachi", "Lahore", "Islamabad", "Faisalabad"],
+      "answer": 2,
+      "time": 20
+    },
+    {
+      "question": "Which Pakistani city is particularly famous for Sohan Halwa?",
+      "options": ["Multan", "Quetta", "Murree", "Sialkot"],
+      "answer": 0,
+      "time": 20
+    },
+    {
+      "question": "Which ancient civilisation is associated with the archaeological site of Mohenjo-daro?",
+      "options": [
+        "Roman Civilisation",
+        "Indus Valley Civilisation",
+        "Greek Civilisation",
+        "Mesopotamian Civilisation"
+      ],
+      "answer": 1,
+      "time": 20
+    },
+    {
+      "question": "In which province of Pakistan is Mohenjo-daro located?",
+      "options": ["Punjab", "Sindh", "Balochistan", "Khyber Pakhtunkhwa"],
+      "answer": 1,
+      "time": 20
+    },
+    {
+      "question": "Which Pakistani athlete won an Olympic gold medal in 2024?",
+      "options": [
+        "Jahangir Khan",
+        "Arshad Nadeem",
+        "Sohail Abbas",
+        "Muhammad Waseem"
+      ],
+      "answer": 1,
+      "time": 20
+    },
+    {
+      "question": "Which mountain pass connects Pakistan with China?",
+      "options": ["Khyber Pass", "Bolan Pass", "Khunjerab Pass", "Lowari Pass"],
+      "answer": 2,
+      "time": 20
+    },
+    {
+      "question": "Which traditional dance is commonly associated with Pashtun culture?",
+      "options": ["Attan", "Bhangra", "Dhammal", "Luddi"],
+      "answer": 0,
+      "time": 20
+    },
+    {
+      "question": "In which Pakistani city is Minar-e-Pakistan located?",
+      "options": ["Islamabad", "Lahore", "Karachi", "Multan"],
+      "answer": 1,
+      "time": 20
+    }
+  ]
+}

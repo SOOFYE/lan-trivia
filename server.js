@@ -209,6 +209,32 @@ function createGameServer(options = {}) {
         "Saved game and backup could not be read. Restore data/ from backup; files were not overwritten.",
       );
   }
+  // Upgrade untouched five-question demo lobbies to the supplied event pack.
+  // Active rounds and host-authored quizzes keep their saved questions.
+  if (
+    !options.questions &&
+    game.phase === "lobby" &&
+    game.index === -1 &&
+    game.players.every((p) => p.score === 0 && p.history.length === 0)
+  ) {
+    const savedPackHash = crypto
+      .createHash("sha256")
+      .update(JSON.stringify(game.questions))
+      .digest("hex");
+    if (
+      savedPackHash ===
+      "cebd3d54b1b1dbfbafc74ed8a9577924e9ac20985183f1f7283474a2f5697a0a"
+    ) {
+      game.questions = validateQuestions(
+        JSON.parse(
+          fs.readFileSync(path.join(__dirname, "questions.json"), "utf8"),
+        ),
+      );
+      console.log(
+        "Loaded the event question pack into the untouched demo lobby.",
+      );
+    }
+  }
   if (game.phase === "question") {
     game.pausedMs = Math.max(0, game.expiresAt - game.savedAt);
     game.phase = "paused";
